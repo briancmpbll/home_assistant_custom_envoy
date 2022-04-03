@@ -8,7 +8,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform
 
-DOMAIN = "enphase_envoy"
+DOMAIN = "enphase_envoy_custom"
 
 PLATFORMS = [Platform.SENSOR]
 
