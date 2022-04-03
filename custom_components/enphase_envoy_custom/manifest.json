@@ -4,7 +4,7 @@
   "documentation": "https://github.com/briancmpbll/home_assistant_custom_envoy",
   "issue_tracker": "https://github.com/briancmpbll/home_assistant_custom_envoy/issues",
   "requirements": ["envoy_reader==0.21.3"],
-  "codeowners": ["@briancmpbll"],
+  "codeowners": ["@gtdiehl", "@briancmpbll"],
   "config_flow": true,
   "version": "0.0.1",
   "zeroconf": [
