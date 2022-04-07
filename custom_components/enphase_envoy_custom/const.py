@@ -6,15 +6,18 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform
+from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform, PERCENTAGE
 
-DOMAIN = "enphase_envoy_custom"
+DOMAIN = "enphase_envoy"
 
 PLATFORMS = [Platform.SENSOR]
 
 
 COORDINATOR = "coordinator"
 NAME = "name"
+
+CONF_SERIAL = "serial"
+CONF_USE_ENLIGHTEN = "use_enlighten"
 
 SENSORS = (
     SensorEntityDescription(
@@ -77,10 +80,25 @@ SENSORS = (
         native_unit_of_measurement=POWER_WATT,
         state_class=SensorStateClass.MEASUREMENT,
     ),
+    SensorEntityDescription(
+        key="batteries",
+        name="Battery",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.BATTERY
+    ),
+    SensorEntityDescription(
+        key="total_battery_percentage",
+        name="Total Battery Percentage",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.BATTERY
+    ),
+    SensorEntityDescription(
+        key="current_battery_capacity",
+        name="Current Battery Capacity",
+        native_unit_of_measurement=ENERGY_WATT_HOUR,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.BATTERY
+    ),
 )
-
-COMMISSIONED = "Commissioned"
-UNCOMMISSIONED = "Uncommissioned"
-CONNECTION_TYPE = "connection_type"
-ENLIGHTEN_PASSWORD = "enlighten_password"
-HTTPS_FLAG = "https_flag"

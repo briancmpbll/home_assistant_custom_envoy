@@ -5,34 +5,18 @@ from datetime import timedelta
 import logging
 
 import async_timeout
-from envoy_reader.envoy_reader import EnvoyReader
+from .envoy_reader import EnvoyReader
 import httpx
+from numpy import isin
 
-from homeassistant.components.enphase_envoy.config_flow import CONF_SERIAL
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_EMAIL,
-    CONF_HOST,
-    CONF_ID,
-    CONF_NAME,
-    CONF_PASSWORD,
-    CONF_USERNAME,
-)
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.httpx_client import get_async_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import (
-    CONNECTION_TYPE,
-    COORDINATOR,
-    DOMAIN,
-    ENLIGHTEN_PASSWORD,
-    HTTPS_FLAG,
-    NAME,
-    PLATFORMS,
-    SENSORS,
-)
+from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
@@ -41,23 +25,22 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Enphase Envoy from a config entry."""
+
     config = entry.data
     name = config[CONF_NAME]
 
     envoy_reader = EnvoyReader(
-        host=config[CONF_HOST],
+        config[CONF_HOST],
         username=config[CONF_USERNAME],
         password=config[CONF_PASSWORD],
+        enlighten_user=config[CONF_USERNAME],
+        enlighten_pass=config[CONF_PASSWORD],
         inverters=True,
-        async_client=get_async_client(hass, verify_ssl=False),
-        enlighten_user=config[CONF_EMAIL],
-        enlighten_pass=config[ENLIGHTEN_PASSWORD],
-        commissioned=config[CONNECTION_TYPE],
-        enlighten_site_id=config[CONF_ID],
+#        async_client=get_async_client(hass),
+        use_enlighten_owner_token=config.get(CONF_USE_ENLIGHTEN, False),
         enlighten_serial_num=config[CONF_SERIAL],
-        https_flag=config[HTTPS_FLAG],
+        https_flag='s' if config.get(CONF_USE_ENLIGHTEN, False) else ''
     )
-    _LOGGER.debug("Creating EnvoyReader object ...")
 
     async def async_update_data():
         """Fetch data from API endpoint."""
@@ -71,14 +54,44 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 raise UpdateFailed(f"Error communicating with API: {err}") from err
 
             for description in SENSORS:
-                if description.key != "inverters":
-                    data[description.key] = await getattr(
-                        envoy_reader, description.key
-                    )()
-                else:
+                if description.key == "inverters":
                     data[
                         "inverters_production"
                     ] = await envoy_reader.inverters_production()
+
+                elif description.key == "batteries":
+                    battery_data = await envoy_reader.battery_storage()
+                    if isinstance(battery_data, list):
+                        battery_dict = {}
+                        for item in battery_data:
+                            battery_dict[item["serial_num"]] = item
+
+                        data[description.key] = battery_dict
+
+                elif description.key == "total_battery_percentage":
+                    battery_data = await envoy_reader.battery_storage()
+                    if isinstance(battery_data, list):
+                        battery_sum = 0
+                        for battery in battery_data:
+                            battery_sum += battery.get("percentFull", 0)
+
+                        data[description.key] = round(battery_sum / len(battery_data), 2)
+
+                elif description.key == "current_battery_capacity":
+                    battery_data = await envoy_reader.battery_storage()
+                    if isinstance(battery_data, list):
+                        battery_sum = 0
+                        for battery in battery_data:
+                            battery_capacity = battery.get("encharge_capacity", 0)
+                            battery_percentage = battery.get("percentFull", 0)
+                            battery_sum += (battery_capacity * (battery_percentage / 100))
+
+                        data[description.key] = round(battery_sum, 2)
+
+                else:
+                    data[description.key] = await getattr(
+                        envoy_reader, description.key
+                    )()
 
             _LOGGER.debug("Retrieved data from API: %s", data)
 

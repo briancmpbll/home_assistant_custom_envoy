@@ -1,10 +1,9 @@
 {
   "domain": "enphase_envoy_custom",
   "name": "Enphase Envoy Custom",
-  "documentation": "https://github.com/briancmpbll/home_assistant_custom_envoy",
-  "issue_tracker": "https://github.com/briancmpbll/home_assistant_custom_envoy/issues",
-  "requirements": ["envoy_reader==0.21.3"],
-  "codeowners": ["@gtdiehl", "@briancmpbll"],
+  "documentation": "https://www.home-assistant.io/integrations/enphase_envoy",
+  "requirements": ["envoy_utils"],
+  "codeowners": ["@gtdiehl"],
   "config_flow": true,
   "version": "0.0.1",
   "zeroconf": [
