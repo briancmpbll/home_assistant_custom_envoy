@@ -1,4 +1,4 @@
-This is a HACS custom integration for enphase envoys with firmware version 7.X. All credit for the actual code fixes goes to [@gtdiehl](https://github.com/gtdiehl), I just packaged it up to work with HACS so that HASS OS users can install it. His code is located [here](https://github.com/gtdiehl/core/tree/envoy_new_fw/homeassistant/components/enphase_envoy). See the discussion on [this issue](https://github.com/jesserizzo/envoy_reader/issues/78) for more context.
+This is a HACS custom integration for enphase envoys with firmware version 7.X. This integration is based off work done by @DanBeard, with some changes to report individual battery status.
 
 # Installation
 
