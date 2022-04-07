@@ -4,10 +4,5 @@ This is a HACS custom integration for enphase envoys with firmware version 7.X. 
 
 1. Install [HACS](https://hacs.xyz/) if you haven't already
 2. Add this repository as a [custom repository](https://hacs.xyz/docs/faq/custom_repositories) in HACS
-3. Add an entry in your configuration.yml:
-   ```yml
-   enphase_envoy_custom:
-     host: your_envoy_ip_here
-   ```
 4. Restart home assistant
-5. Home assistant should automatically discover the integration and you can follow the [documentation](https://www.home-assistant.io/integrations/enphase_envoy/) for the official integration
+5. Add the integration through the home assistant configuration flow
