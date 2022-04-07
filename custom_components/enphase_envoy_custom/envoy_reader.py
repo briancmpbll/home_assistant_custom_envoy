@@ -228,7 +228,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 'user[email]': self.enlighten_user,
                 'user[password]': self.enlighten_pass,
             }
-            resp = await client.post(ENLIGHTEN_AUTH_FORM_URL+form_action, data=payload_login)
+            resp = await client.post(ENLIGHTEN_AUTH_FORM_URL+form_action, data=payload_login, timeout=10)
             if resp.status_code >= 400:
                 raise Exception("Could not Authenticate via Enlighten auth form")
 
