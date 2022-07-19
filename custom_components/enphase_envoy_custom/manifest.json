@@ -2,7 +2,9 @@
   "domain": "enphase_envoy",
   "name": "Enphase Envoy (DEV)",
   "documentation": "https://www.home-assistant.io/integrations/enphase_envoy",
-  "requirements": ["envoy-utils"],
+  "requirements": [
+    "git+https://github.com/briancmpbll/envoy_reader.git@main#envoy_reader"
+  ],
   "codeowners": ["@gtdiehl"],
   "config_flow": true,
   "iot_class": "local_polling",
