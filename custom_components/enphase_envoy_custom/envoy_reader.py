@@ -231,7 +231,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             resp = await client.post(ENLIGHTEN_AUTH_FORM_URL+form_action, data=payload_login, timeout=10)
             if resp.status_code == 302:
                 #wait for redirected session to be created
-                time.sleep(.2)
+                #time.sleep(.2)
+                newresp = await client.get(resp.next_request)
             if resp.status_code >= 400:
                 raise Exception("Could not Authenticate via Enlighten auth form")
 
