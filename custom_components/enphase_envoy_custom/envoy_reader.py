@@ -229,14 +229,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 'user[password]': self.enlighten_pass,
             }
             resp = await client.post(ENLIGHTEN_AUTH_FORM_URL+form_action, data=payload_login, timeout=10, follow_redirects=True)
-            if resp.status_code == 302:
-                #Follow returned next_request for successful login
-                newresp = await client.get(resp.next_request.url)
+            if resp.status_code == 200:
+                #Get the authorization cookies from the login redirect
+                respCookies = resp.cookies
             if resp.status_code >= 400:
                 raise Exception("Could not Authenticate via Enlighten auth form")
 
             # now that we're in a logged in session, we can request the 6 month owner token via enlighten
-            resp = await client.get(ENLIGHTEN_TOKEN_URL.format(self.enlighten_serial_num))
+            resp = await client.get(ENLIGHTEN_TOKEN_URL.format(self.enlighten_serial_num), cookies=respCookies)
             resp_json = resp.json()
             if "token" not in resp_json.keys():
                 msg = resp_json.get("message", "Unknown error returned from enlighten: " + resp.text)
