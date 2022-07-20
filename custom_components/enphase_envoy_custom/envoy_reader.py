@@ -106,6 +106,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_production_inverters = None
         self.endpoint_production_results = None
         self.endpoint_ensemble_json_results = None
+        self.endpoint_home_json_results = None
         self.isMeteringEnabled = False  # pylint: disable=invalid-name
         self._async_client = async_client
         self._authorization_header = None
