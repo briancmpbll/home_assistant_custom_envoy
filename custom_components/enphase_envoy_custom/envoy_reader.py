@@ -256,9 +256,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         }
 
         if self.use_enlighten_owner_token:
-            token_json = await self._fetch_owner_token_json()
+            self._token = await self._fetch_owner_token_json()
 
-            self._token = token_json["token"]
+            #self._token = token_json["token"]
             #time_left_days = (token_json["expires_at"] - time.time())/(24*3600)
             #_LOGGER.debug("Commissioned Token valid for %s days", time_left_days)
 
