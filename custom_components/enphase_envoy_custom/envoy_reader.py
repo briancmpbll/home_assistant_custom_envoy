@@ -6,6 +6,7 @@ import logging
 import jwt
 import re
 import time
+import json
 from json.decoder import JSONDecodeError
 
 import httpx
@@ -44,7 +45,9 @@ TOKEN_URL = "https://entrez.enphaseenergy.com/entrez_tokens"
 
 # paths for the enlighten 6 month owner token
 ENLIGHTEN_AUTH_FORM_URL = "https://enlighten.enphaseenergy.com"
+ENLIGHTEN_AUTH_JSON_URL = "https://enlighten.enphaseenergy.com/login/login.json"
 ENLIGHTEN_TOKEN_URL = "https://enlighten.enphaseenergy.com/entrez-auth-token?serial_num={}"
+ENLIGHTEN_TOKEN_JSON_URL = "https://entrez.enphaseenergy.com/tokens"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -219,31 +222,30 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         async with self.async_client as client:
             # login to the enlighten UI
 
-            resp = await client.get(ENLIGHTEN_AUTH_FORM_URL)
-            soup = BeautifulSoup(resp.text, features="html.parser")
+            #resp = await client.get(ENLIGHTEN_AUTH_FORM_URL)
+            #soup = BeautifulSoup(resp.text, features="html.parser")
             # grab the single use auth token for this form
-            authenticity_token = soup.find('input', {'name': 'authenticity_token'})["value"]
+            #authenticity_token = soup.find('input', {'name': 'authenticity_token'})["value"]
             # and the form action itself
-            form_action = soup.find('input', {'name': 'authenticity_token'}).parent["action"]
-            payload_login = {
-                'authenticity_token': authenticity_token,
-                'user[email]': self.enlighten_user,
-                'user[password]': self.enlighten_pass,
-            }
-            resp = await client.post(ENLIGHTEN_AUTH_FORM_URL+form_action, data=payload_login, timeout=10, follow_redirects=True)
-            if resp.status_code == 200:
-                #Get the authorization cookies from the login redirect
-                respCookies = resp.cookies
+            #form_action = soup.find('input', {'name': 'authenticity_token'}).parent["action"]
+
+            # Get an enlighten user session
+            payload_login = {'user[email]': self.enlighten_user,'user[password]': self.enlighten_pass}
+
+            resp = await client.post(ENLIGHTEN_AUTH_JSON_URL, data=payload_login)
             if resp.status_code >= 400:
                 raise Exception("Could not Authenticate via Enlighten auth form")
 
+            response_data = json.loads(resp.text)
+            login_data = {'session_id': response_data['session_id'], 'serial_num': self.enlighten_serial_num, 'username': self.enlighten_user}
             # now that we're in a logged in session, we can request the 6 month owner token via enlighten
-            resp = await client.get(ENLIGHTEN_TOKEN_URL.format(self.enlighten_serial_num), cookies=respCookies)
-            resp_json = resp.json()
-            if "token" not in resp_json.keys():
-                msg = resp_json.get("message", "Unknown error returned from enlighten: " + resp.text)
-                raise Exception("Could not get 6 month token: " + msg)
-            return resp_json
+            resp = await client.post(ENLIGHTEN_TOKEN_JSON_URL, json=login_data)
+            owner_token = resp.text
+            #resp_json = resp.json()
+            if resp.status_code != 200:
+                #msg = resp_json.get("message", "Unknown error returned from enlighten: " + resp.text)
+                raise Exception("Could not get 6 month token: " + resp.text)
+            return owner_token
 
     async def _getEnphaseToken(  # pylint: disable=invalid-name
         self,
@@ -257,8 +259,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             token_json = await self._fetch_owner_token_json()
 
             self._token = token_json["token"]
-            time_left_days = (token_json["expires_at"] - time.time())/(24*3600)
-            _LOGGER.debug("Commissioned Token valid for %s days", time_left_days)
+            #time_left_days = (token_json["expires_at"] - time.time())/(24*3600)
+            #_LOGGER.debug("Commissioned Token valid for %s days", time_left_days)
 
         elif self.commissioned == "True" or self.commissioned == "Commissioned":
             # Login to website and store cookie
