@@ -215,9 +215,11 @@ class EnvoyBatteryEntity(EnvoyEntity):
         if (
             self.coordinator.data.get("batteries") is not None
         ):
-            return self.coordinator.data.get("batteries").get(
-                self._serial_number
-            ).get("percentFull")
+            #Need to return zero if LED_Status is 0 for battery error condition
+            if (self.coordinator.data.get("batteries").get(self._serial_number).get("led_status") == 0):
+                return 0
+            else:
+                return self.coordinator.data.get("batteries").get(self._serial_number).get("percentFull")
 
         return None
 
