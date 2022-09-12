@@ -73,7 +73,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     if isinstance(battery_data, list):
                         battery_sum = 0
                         for battery in battery_data:
-                            battery_sum += battery.get("percentFull", 0)
+                            if (battery.get("led_status") != 0):
+                                battery_sum += battery.get("percentFull", 0)
 
                         data[description.key] = round(battery_sum / len(battery_data), 2)
 
@@ -83,7 +84,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         battery_sum = 0
                         for battery in battery_data:
                             battery_capacity = battery.get("encharge_capacity", 0)
-                            battery_percentage = battery.get("percentFull", 0)
+                            if (battery.get("led_status") != 0):
+                                battery_percentage = battery.get("percentFull", 0)
                             battery_sum += (battery_capacity * (battery_percentage / 100))
 
                         data[description.key] = round(battery_sum, 2)
