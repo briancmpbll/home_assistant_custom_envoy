@@ -31,6 +31,7 @@ ENDPOINT_URL_PRODUCTION_INVERTERS = "http{}://{}/api/v1/production/inverters"
 ENDPOINT_URL_PRODUCTION = "http{}://{}/production"
 ENDPOINT_URL_CHECK_JWT = "https://{}/auth/check_jwt"
 ENDPOINT_URL_ENSEMBLE_INVENTORY = "http{}://{}/ivp/ensemble/inventory"
+ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
 
 # pylint: disable=pointless-string-statement
 
@@ -77,6 +78,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         "Consumption data not available for your Envoy device."
     )
 
+    message_grid_status_not_available = (
+        "Grid status not available for your Envoy device."
+    )
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host,
@@ -105,6 +110,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_production_inverters = None
         self.endpoint_production_results = None
         self.endpoint_ensemble_json_results = None
+        self.endpoint_home_json_results = None
         self.isMeteringEnabled = False  # pylint: disable=invalid-name
         self._async_client = async_client
         self._authorization_header = None
@@ -144,6 +150,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         )
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
+        )
+        await self._update_endpoint(
+            "endpoint_home_json_results", ENDPOINT_URL_HOME_JSON
         )
 
     async def _update_from_p_endpoint(self):
@@ -723,6 +732,15 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return self.message_battery_not_available
 
         return raw_json["storage"][0]
+
+    async def grid_status(self):
+        """Return grid status reported by Envoy"""
+        if self.endpoint_home_json_results is not None:
+            home_json = self.endpoint_home_json_results.json()
+            if "enpower" in home_json.keys() and "grid_status" in home_json["enpower"].keys():
+                return home_json["enpower"]["grid_status"]
+
+        return self.message_grid_status_not_available
 
     def run_in_console(self):
         """If running this module directly, print all the values in the console."""
