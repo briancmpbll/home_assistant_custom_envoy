@@ -1,5 +1,9 @@
 """The enphase_envoy component."""
 
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntityDescription
+)
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -10,8 +14,9 @@ from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform, PERCENTA
 
 DOMAIN = "enphase_envoy"
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
+ICON = "mdi:flash"
 
 COORDINATOR = "coordinator"
 NAME = "name"
@@ -116,4 +121,10 @@ BATTERY_ENERGY_CHARGED_SENSOR = SensorEntityDescription(
     native_unit_of_measurement=ENERGY_WATT_HOUR,
     state_class=SensorStateClass.TOTAL,
     device_class=SensorDeviceClass.ENERGY
+)
+
+GRID_STATUS_BINARY_SENSOR = BinarySensorEntityDescription(
+    key="grid_status",
+    name="Grid Status",
+    device_class=BinarySensorDeviceClass.CONNECTIVITY
 )
