@@ -68,27 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                         data[description.key] = battery_dict
 
-                elif description.key == "total_battery_percentage":
-                    battery_data = await envoy_reader.battery_storage()
-                    if isinstance(battery_data, list):
-                        battery_sum = 0
-                        for battery in battery_data:
-                            battery_sum += battery.get("percentFull", 0)
-
-                        data[description.key] = round(battery_sum / len(battery_data), 2)
-
-                elif description.key == "current_battery_capacity":
-                    battery_data = await envoy_reader.battery_storage()
-                    if isinstance(battery_data, list):
-                        battery_sum = 0
-                        for battery in battery_data:
-                            battery_capacity = battery.get("encharge_capacity", 0)
-                            battery_percentage = battery.get("percentFull", 0)
-                            battery_sum += (battery_capacity * (battery_percentage / 100))
-
-                        data[description.key] = round(battery_sum, 2)
-
-                else:
+                elif (description.key not in ["current_battery_capacity", "total_battery_percentage"]):
                     data[description.key] = await getattr(
                         envoy_reader, description.key
                     )()
