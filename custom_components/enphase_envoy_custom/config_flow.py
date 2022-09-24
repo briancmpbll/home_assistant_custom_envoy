@@ -7,6 +7,7 @@ from typing import Any
 
 from .envoy_reader import EnvoyReader
 import httpx
+import ipaddress
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -15,8 +16,6 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNA
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.httpx_client import get_async_client
-
 
 from .const import DOMAIN, CONF_SERIAL, CONF_USE_ENLIGHTEN
 
@@ -50,6 +49,15 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> EnvoyRead
         raise CannotConnect from err
 
     return envoy_reader
+
+
+def _is_ipv4(address):
+    try:
+        ip = ipaddress.ip_address(address)
+        return isinstance(ip, ipaddress.IPv4Address)
+    except ValueError:
+        _LOGGER.error("%s is an invalid IP address", address)
+        return False
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -94,10 +102,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, discovery_info: zeroconf.ZeroconfServiceInfo
     ) -> FlowResult:
         """Handle a flow initialized by zeroconf discovery."""
+        self.ip_address = discovery_info.host
+        if not _is_ipv4(self.ip_address):
+            return self.async_abort(reason="ipv6_not_supported")
+
         serial = discovery_info.properties["serialnum"]
         await self.async_set_unique_id(serial)
-        self.ip_address = discovery_info.host
-        self._abort_if_unique_id_configured({CONF_HOST: self.ip_address})
+        self._abort_if_unique_id_configured()
+
         for entry in self._async_current_entries(include_ignore=False):
             if (
                 entry.unique_id is None
