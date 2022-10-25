@@ -196,9 +196,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                         continue
                     _LOGGER.debug("Fetched from %s: %s: %s", url, resp, resp.text)
                     return resp
-            except httpx.TransportError:
+            except httpx.TransportError as e:
+                _LOGGER.debug("TransportError: %s", e)
                 if attempt == 2:
-                    raise
+                    raise e
 
     async def _async_post(self, url, data, cookies=None, **kwargs):
         _LOGGER.debug("HTTP POST Attempt: %s", url)
@@ -296,8 +297,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _refresh_token_cookies(self):
         """
-         Refresh the client's cookie with the token (if valid)
-         :returns True if cookie refreshed, False if it couldn't be
+        Refresh the client's cookie with the token (if valid)
+        :returns True if cookie refreshed, False if it couldn't be
         """
         # Create HTTP Header
         self._authorization_header = {"Authorization": "Bearer " + self._token}
