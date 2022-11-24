@@ -73,6 +73,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )()
 
             data["grid_status"] = await envoy_reader.grid_status()
+            
+            if "lifetime_consumption" in data and "lifetime_production" in data:
+                LEC_state = hass.states.get( "sensor.envoy_" + config[CONF_SERIAL] + "_lifetime_energy_consumption" )
+                LEP_state = hass.states.get( "sensor.envoy_" + config[CONF_SERIAL] + "_lifetime_energy_production" )
+                TGEI_state = hass.states.get( "sensor.envoy_" + config[CONF_SERIAL] + "_total_grid_energy_imported" )
+                TGEE_state = hass.states.get( "sensor.envoy_" + config[CONF_SERIAL] + "_total_grid_energy_exported" )
+
+                if LEC_state and str(LEC_state.state) != "unknown" and LEP_state and str(LEP_state.state) != "unknown":
+                    LEC_delta = data["lifetime_consumption"] - int(LEC_state.state)
+                    LEP_delta = data["lifetime_production"] - int(LEP_state.state)
+                    data["grid_import"] = 0
+                    data["grid_export"] = 0
+
+                    if LEC_delta < data["lifetime_consumption"] and TGEI_state and str(TGEI_state.state) != "unknown":
+                        data["grid_import"] = max(LEC_delta - LEP_delta, 0) + int(TGEI_state.state)
+
+                    if LEP_delta < data["lifetime_production"] and TGEE_state and str(TGEE_state.state) != "unknown":
+                        data["grid_export"] = max(LEP_delta - LEC_delta, 0) + int(TGEE_state.state)
 
             _LOGGER.debug("Retrieved data from API: %s", data)
 
