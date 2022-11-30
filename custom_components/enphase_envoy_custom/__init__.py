@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                         data[description.key] = battery_dict
 
-                elif (description.key not in ["current_battery_capacity", "total_battery_percentage"]):
+                elif (description.key not in ["current_battery_capacity", "total_battery_percentage", "grid_import", "grid_export"]):
                     data[description.key] = await getattr(
                         envoy_reader, description.key
                     )()
