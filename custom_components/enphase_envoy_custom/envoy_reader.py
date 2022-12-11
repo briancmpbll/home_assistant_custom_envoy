@@ -39,7 +39,7 @@ ENVOY_MODEL_S = "PC"
 ENVOY_MODEL_C = "P"
 ENVOY_MODEL_LEGACY = "P0"
 
-LOGIN_URL = "https://entrez.enphaseenergy.com/login"
+LOGIN_URL = "https://entrez.enphaseenergy.com/login_main_page"
 TOKEN_URL = "https://entrez.enphaseenergy.com/entrez_tokens"
 
 # paths for the enlighten 6 month owner token
