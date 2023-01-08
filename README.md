@@ -22,10 +22,15 @@ sensor:
     round: 2
 ```
 
+Entity Sensors
+
 | Sensor | Unit | Notes |
 | - | - | - |
 | `grid_import_power` | `W` | `Power currently importing from the grid` |
-| `grid_export_power` | `W` | `Power currently exporting from the grid` |
+| `grid_export_power` | `W` | `Power currently exporting to the grid` |
+| `daily_grid_import_energy` | `Wh` | `Net Energy Imported from the grid (consumption - production) - Aways Greater than zero` |
+| `daily_grid_export_energy` | `Wh` | `Net Energy Exported to the grid (production - consumption) - Always Greater than zero` |
+| `daily_grid_net_import_energy` | `Wh` | `Net Energy Imported from the grid (consumption - production)` |
 
 
 [<img width="545" alt="bmc-button" src="https://user-images.githubusercontent.com/1570176/180045360-d3f479c5-ad84-4483-b2b0-83820b1a8c63.png">](https://buymeacoffee.com/briancmpblL)
