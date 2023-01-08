@@ -22,10 +22,11 @@ sensor:
     round: 2
 ```
 
-Entity Sensors
+Entity Sensors. Only use the "daily_production" sensor in the dashboard. All sensors prefixed with: `sensor.envoy_XXXXXX_`
 
 | Sensor | Unit | Notes |
 | - | - | - |
+| `daily_production` | `Wh` | `Energy produced today` |
 | `grid_import_power` | `W` | `Power currently importing from the grid` |
 | `grid_export_power` | `W` | `Power currently exporting to the grid` |
 | `daily_grid_import_energy` | `Wh` | `Net Energy Imported from the grid (consumption - production) - Aways Greater than zero` |
