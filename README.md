@@ -7,7 +7,7 @@ This is a HACS custom integration for enphase envoys with firmware version 7.X. 
 4. Restart home assistant
 5. Add the integration through the home assistant configuration flow. Look for "Enphase Envoy (DEV)" .
 6. Click "Use Englighten" and use your enlighten username and password in the fields
-6. Add integral sensors if you want to use the energy dashboard. This is nessesary because Homeassistant wants the dashboard import/export sensors to *not* count energy you instantly produced and used yourself. Therefore, we need to integrate the power sensor Envoy provides. I wish they changed this! XXXXXX is your serial number:
+6. Add integral sensors if you want to use the energy dashboard. This is nessesary because Homeassistant requires the dashboard import/export sensors to *not* count energy you instantly produced and used yourself. Therefore, we need to integrate the power sensors Envoy does provides. Be nice if this could be in the integration, but not implimented yet. XXXXXX is your serial number:
 ```
 sensor:
   - platform: integration
