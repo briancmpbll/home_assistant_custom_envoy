@@ -1,5 +1,5 @@
 {
-  "domain": "enphase_envoy",
+  "domain": "enphase_envoy_custom",
   "name": "Enphase Envoy (DEV)",
   "documentation": "https://www.home-assistant.io/integrations/enphase_envoy",
   "requirements": ["envoy-utils"],

@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform, PERCENTAGE
 
-DOMAIN = "enphase_envoy"
+DOMAIN = "enphase_envoy_custom"
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
@@ -25,6 +25,27 @@ CONF_SERIAL = "serial"
 CONF_USE_ENLIGHTEN = "use_enlighten"
 
 SENSORS = (
+    SensorEntityDescription(
+        key="grid_import_power",
+        name="Current Grid Import Power",
+        native_unit_of_measurement=POWER_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+    ),
+    SensorEntityDescription(
+        key="grid_export_power",
+        name="Current Grid Export Power",
+        native_unit_of_measurement=POWER_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+    ),
+    SensorEntityDescription(
+        key="daily_net_import_energy",
+        name="Today's Net Import Energy",
+        native_unit_of_measurement=ENERGY_WATT_HOUR,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
     SensorEntityDescription(
         key="production",
         name="Current Power Production",

@@ -705,7 +705,20 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return None
 
         return response_dict
-
+    
+    async def daily_net_import_energy(self):
+        return (await self.daily_consumption() - await self.daily_production())
+    
+    async def daily_grid_import_energy(self):
+        return max(0, await self.daily_consumption() - await self.daily_production())
+    async def daily_grid_export_energy(self):
+        return max(0, await self.daily_production() - await self.daily_consumption())
+        
+    async def grid_import_power(self):
+        return max(0, await self.consumption() - await self.production())
+    async def grid_export_power(self):
+        return max(0, await self.production() - await self.consumption())
+    
     async def battery_storage(self):
         """Return battery data from Envoys that support and have batteries installed"""
         if (
