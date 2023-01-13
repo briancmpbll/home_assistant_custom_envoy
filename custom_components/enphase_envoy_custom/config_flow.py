@@ -19,8 +19,6 @@ from homeassistant.exceptions import HomeAssistantError
 from .const import DOMAIN, CONF_SERIAL, CONF_USE_ENLIGHTEN
 
 _LOGGER = logging.getLogger(__name__)
-logging.getLogger("envoy_reader.envoy_reader").setLevel(logging.DEBUG)
-logging.getLogger("custom_components.enphase_envoy").setLevel(logging.DEBUG)
 
 ENVOY = "Envoy"
 
