@@ -32,6 +32,8 @@ ENDPOINT_URL_PRODUCTION = "http{}://{}/production"
 ENDPOINT_URL_CHECK_JWT = "https://{}/auth/check_jwt"
 ENDPOINT_URL_ENSEMBLE_INVENTORY = "http{}://{}/ivp/ensemble/inventory"
 ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
+ENDPOINT_URL_ENSEMBLE_POWER = "http{}://{}/ivp/ensemble/power"
+ENDPOINT_URL_ARF_PROFILE = "http{}://{}/ivp/arf/profile"
 
 # pylint: disable=pointless-string-statement
 
@@ -110,6 +112,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_production_inverters = None
         self.endpoint_production_results = None
         self.endpoint_ensemble_json_results = None
+        self.endpoint_ensemble_power_results = None
+        self.endpoint_arf_profile_results = None
         self.endpoint_home_json_results = None
         self.isMeteringEnabled = False  # pylint: disable=invalid-name
         self._async_client = async_client
@@ -124,6 +128,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._token = ""
         self.use_enlighten_owner_token = use_enlighten_owner_token
         self.token_refresh_buffer_seconds = token_refresh_buffer_seconds
+        self.battery_power = 0
 
     @property
     def async_client(self):
@@ -150,6 +155,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         )
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
+        )
+        await self._update_endpoint(
+            "endpoint_ensemble_power_results", ENDPOINT_URL_ENSEMBLE_POWER
         )
         await self._update_endpoint(
             "endpoint_home_json_results", ENDPOINT_URL_HOME_JSON
@@ -550,7 +558,47 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         raw_json = self.endpoint_production_json_results.json()
         consumption = raw_json["consumption"][0]["wNow"]
+        if self.battery_power != 0:
+            consumption += self.battery_power
         return int(consumption)
+
+    async def discharge(self):
+        """Return battery discharge data from Envoys that support and have batteries installed"""
+        try:
+            raw_json = self.endpoint_ensemble_power_results.json()
+        except JSONDecodeError:
+            return None
+
+        power = 0
+        try:
+            for item in raw_json["devices:"]:
+                power += item["real_power_mw"] 
+        except (JSONDecodeError, KeyError, IndexError, TypeError, AttributeError):
+                return None
+        if power > 0:
+            self.battery_power = power / 1000
+            return int(power / 1000)
+        else:
+            return 0
+    
+    async def charge(self):
+        """Return battery discharge data from Envoys that support and have batteries installed"""
+        try:
+            raw_json = self.endpoint_ensemble_power_results.json()
+        except JSONDecodeError:
+            return None
+
+        power = 0
+        try:
+            for item in raw_json["devices:"]:
+                power += item["real_power_mw"]
+        except (JSONDecodeError, KeyError, IndexError, TypeError, AttributeError):
+                return None
+        if power < 0:
+            self.battery_power = power / 1000
+            return int(power / 1000) * -1
+        else:
+            return 0
 
     async def daily_production(self):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
@@ -763,6 +811,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.lifetime_consumption(),
                 self.inverters_production(),
                 self.battery_storage(),
+                self.current_battery_charge(),
+                self.current_battery_discharge(),
                 return_exceptions=False,
             )
         )

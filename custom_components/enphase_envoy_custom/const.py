@@ -53,6 +53,18 @@ SENSORS = (
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
+        key="discharge",
+        name="Current Battery Discharge",
+        native_unit_of_measurement=POWER_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
+        key="charge",
+        name="Current Battery Charge",
+        native_unit_of_measurement=POWER_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
         key="consumption",
         name="Current Power Consumption",
         native_unit_of_measurement=POWER_WATT,
@@ -107,21 +119,21 @@ SENSORS = (
     ),
 )
 
-BATTERY_ENERGY_DISCHARGED_SENSOR = SensorEntityDescription(
-    key="battery_energy_discharged",
-    name="Battery Energy Discharged",
-    native_unit_of_measurement=ENERGY_WATT_HOUR,
-    state_class=SensorStateClass.TOTAL,
-    device_class=SensorDeviceClass.ENERGY
-)
+# BATTERY_ENERGY_DISCHARGED_SENSOR = SensorEntityDescription(
+#     key="battery_energy_discharged",
+#     name="Battery Energy Discharged",
+#     native_unit_of_measurement=ENERGY_WATT_HOUR,
+#     state_class=SensorStateClass.TOTAL,
+#     device_class=SensorDeviceClass.ENERGY
+# )
 
-BATTERY_ENERGY_CHARGED_SENSOR = SensorEntityDescription(
-    key="battery_energy_charged",
-    name="Battery Energy Charged",
-    native_unit_of_measurement=ENERGY_WATT_HOUR,
-    state_class=SensorStateClass.TOTAL,
-    device_class=SensorDeviceClass.ENERGY
-)
+# BATTERY_ENERGY_CHARGED_SENSOR = SensorEntityDescription(
+#     key="battery_energy_charged",
+#     name="Battery Energy Charged",
+#     native_unit_of_measurement=ENERGY_WATT_HOUR,
+#     state_class=SensorStateClass.TOTAL,
+#     device_class=SensorDeviceClass.ENERGY
+# )
 
 GRID_STATUS_BINARY_SENSOR = BinarySensorEntityDescription(
     key="grid_status",
