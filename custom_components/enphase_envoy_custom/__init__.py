@@ -10,7 +10,7 @@ import httpx
 from numpy import isin
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME, CONF_FILE_PATH
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.httpx_client import get_async_client
@@ -35,6 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         password=config[CONF_PASSWORD],
         enlighten_user=config[CONF_USERNAME],
         enlighten_pass=config[CONF_PASSWORD],
+        token_cache_file="/config/custom_components/enphase_envoy/token_cache.json",
         inverters=True,
 #        async_client=get_async_client(hass),
         use_enlighten_owner_token=config.get(CONF_USE_ENLIGHTEN, False),

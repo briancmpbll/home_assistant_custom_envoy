@@ -7,6 +7,7 @@ import jwt
 import re
 import time
 import json
+import os.path
 from json.decoder import JSONDecodeError
 
 import httpx
@@ -90,6 +91,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         async_client=None,
         enlighten_user=None,
         enlighten_pass=None,
+        token_cache_file=None,
         commissioned=False,
         enlighten_site_id=None,
         enlighten_serial_num=None,
@@ -116,6 +118,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._cookies = None
         self.enlighten_user = enlighten_user
         self.enlighten_pass = enlighten_pass
+        self.token_cache_file = token_cache_file
         self.commissioned = commissioned
         self.enlighten_site_id = enlighten_site_id
         self.enlighten_serial_num = enlighten_serial_num
@@ -246,6 +249,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             if resp.status_code != 200:
                 #msg = resp_json.get("message", "Unknown error returned from enlighten: " + resp.text)
                 raise Exception("Could not get 6 month token: " + resp.text)
+            _LOGGER.error(os.getcwd())
+            self.store_token(owner_token)
             return owner_token
 
     async def _getEnphaseToken(  # pylint: disable=invalid-name
@@ -257,11 +262,12 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         }
 
         if self.use_enlighten_owner_token:
-            self._token = await self._fetch_owner_token_json()
-
-            #self._token = token_json["token"]
-            #time_left_days = (token_json["expires_at"] - time.time())/(24*3600)
-            #_LOGGER.debug("Commissioned Token valid for %s days", time_left_days)
+            try: 
+                self._token = await self._fetch_owner_token_json()
+            except Exception as e:
+                _LOGGER.error(str(e))
+                _LOGGER.error("Unable to retrieve token from Enphase, falling back to local cache")
+                self._token = self.get_stored_token()
 
         elif self.commissioned == "True" or self.commissioned == "Commissioned":
             # Login to website and store cookie
@@ -273,12 +279,15 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             response = await self._async_post(
                 TOKEN_URL, data=payload_token, cookies=resp.cookies
             )
-
-            parsed_html = BeautifulSoup(response.text, features="html.parser")
-            self._token = parsed_html.body.find(  # pylint: disable=invalid-name, unused-variable, redefined-outer-name
-                "textarea"
-            ).text
-            _LOGGER.debug("Commissioned Token: %s", self._token)
+            if response.status_code != 200:
+                _LOGGER.error("Unable to retrieve token from: %s", LOGIN_URL)
+                _LOGGER.error("Falling back to cached token")
+                self._token = self.get_stored_token()
+            else:
+                parsed_html = BeautifulSoup(response.text, features="html.parser")
+                self._token = parsed_html.body.find("textarea").text
+                self.store_token(self._token)
+                _LOGGER.debug("Commissioned Token2: %s", self._token)
 
         else:
             # Login to website and store cookie
@@ -490,6 +499,24 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         match = SERIAL_REGEX.search(response.text)
         if match:
             return match.group(1)
+
+    def get_stored_token(self):
+        """Return stored data."""
+        if not os.path.exists(self.token_cache_file):
+            return {}
+        with open('token_cache.json', 'r') as openfile:
+            # Reading from json file
+            json_object = json.load(openfile)
+        
+        return json_object["auth_token"]
+
+    def store_token(self, token):
+        """Store uri timestamp to file."""
+        token_json = {
+            "auth_token": token
+        }
+        with open(self.token_cache_file, "w") as outfile:
+            json.dump(token_json, outfile)
 
     def create_connect_errormessage(self):
         """Create error message if unable to connect to Envoy"""
