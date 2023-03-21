@@ -35,7 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         password=config[CONF_PASSWORD],
         enlighten_user=config[CONF_USERNAME],
         enlighten_pass=config[CONF_PASSWORD],
-        token_cache_file="/config/custom_components/enphase_envoy/token_cache.json",
+        token_cache_file=config[CONF_FILE_PATH],
         inverters=True,
 #        async_client=get_async_client(hass),
         use_enlighten_owner_token=config.get(CONF_USE_ENLIGHTEN, False),
