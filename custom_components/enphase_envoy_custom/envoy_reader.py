@@ -249,7 +249,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             if resp.status_code != 200:
                 #msg = resp_json.get("message", "Unknown error returned from enlighten: " + resp.text)
                 raise Exception("Could not get 6 month token: " + resp.text)
-            _LOGGER.error(os.getcwd())
             self.store_token(owner_token)
             return owner_token
 
@@ -504,7 +503,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """Return stored data."""
         if not os.path.exists(self.token_cache_file):
             return {}
-        with open('token_cache.json', 'r') as openfile:
+        with open(self.token_cache_file, 'r') as openfile:
             # Reading from json file
             json_object = json.load(openfile)
         
