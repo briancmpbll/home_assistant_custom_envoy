@@ -34,7 +34,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> EnvoyRead
         password=data[CONF_PASSWORD],
         enlighten_user=data[CONF_USERNAME],
         enlighten_pass=data[CONF_PASSWORD],
-        token_cache_file=data[CONF_FILE_PATH]
+        token_cache_file=data[CONF_FILE_PATH],
         inverters=False,
 #        async_client=get_async_client(hass),
         use_enlighten_owner_token=data.get(CONF_USE_ENLIGHTEN, False),
