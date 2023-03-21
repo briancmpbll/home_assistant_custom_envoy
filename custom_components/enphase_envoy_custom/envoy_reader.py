@@ -226,13 +226,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         async with self.async_client as client:
             # login to the enlighten UI
 
-            #resp = await client.get(ENLIGHTEN_AUTH_FORM_URL)
-            #soup = BeautifulSoup(resp.text, features="html.parser")
-            # grab the single use auth token for this form
-            #authenticity_token = soup.find('input', {'name': 'authenticity_token'})["value"]
-            # and the form action itself
-            #form_action = soup.find('input', {'name': 'authenticity_token'}).parent["action"]
-
             # Get an enlighten user session
             payload_login = {'user[email]': self.enlighten_user,'user[password]': self.enlighten_pass}
 
@@ -286,7 +279,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 parsed_html = BeautifulSoup(response.text, features="html.parser")
                 self._token = parsed_html.body.find("textarea").text
                 self.store_token(self._token)
-                _LOGGER.debug("Commissioned Token2: %s", self._token)
+                _LOGGER.debug("Commissioned Token2")
 
         else:
             # Login to website and store cookie
@@ -299,7 +292,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             self._token = soup.find("textarea").contents[
                 0
             ]  # pylint: disable=invalid-name
-            _LOGGER.debug("Uncommissioned Token: %s", self._token)
+            _LOGGER.debug("Uncommissioned Token")
 
         await self._refresh_token_cookies()
 
@@ -368,13 +361,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         # Check if the Secure flag is set
         if self.https_flag == "s":
-            _LOGGER.debug("Checking Token value: %s", self._token)
+            _LOGGER.debug("Checking Token value")
             # Check if a token has already been retrieved
             if self._token == "":
-                _LOGGER.debug("Found empty token: %s", self._token)
+                _LOGGER.debug("Found empty token")
                 await self._getEnphaseToken()
             else:
-                _LOGGER.debug("Token is populated: %s", self._token)
+                _LOGGER.debug("Token is populated")
                 if self._is_enphase_token_expired(self._token):
                     _LOGGER.debug("Found Expired token - Retrieving new token")
                     await self._getEnphaseToken()
