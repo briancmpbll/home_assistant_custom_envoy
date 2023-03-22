@@ -232,7 +232,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             resp = await client.post(ENLIGHTEN_AUTH_JSON_URL, data=payload_login)
             if resp.status_code >= 400:
                 raise Exception("Could not Authenticate via Enlighten auth form")
-
             response_data = json.loads(resp.text)
             login_data = {'session_id': response_data['session_id'], 'serial_num': self.enlighten_serial_num, 'username': self.enlighten_user}
             # now that we're in a logged in session, we can request the 6 month owner token via enlighten
@@ -242,7 +241,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             if resp.status_code != 200:
                 #msg = resp_json.get("message", "Unknown error returned from enlighten: " + resp.text)
                 raise Exception("Could not get 6 month token: " + resp.text)
+            _LOGGER.debug("Storing the token for emergencies")
             self.store_token(owner_token)
+            _LOGGER.debug("Token stored successfully")
             return owner_token
 
     async def _getEnphaseToken(  # pylint: disable=invalid-name
@@ -256,6 +257,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if self.use_enlighten_owner_token:
             try: 
                 self._token = await self._fetch_owner_token_json()
+                _LOGGER.debug("Retrieved the 6 month token successfully")
             except Exception as e:
                 _LOGGER.error(str(e))
                 _LOGGER.error("Unable to retrieve token from Enphase, falling back to local cache")
@@ -302,6 +304,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         :returns True if cookie refreshed, False if it couldn't be
         """
         # Create HTTP Header
+        _LOGGER.error(self._token)
         self._authorization_header = {"Authorization": "Bearer " + self._token}
 
         # Fetch the Enphase Token status from the local Envoy
