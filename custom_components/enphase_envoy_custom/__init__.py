@@ -13,7 +13,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME, CONF_FILE_PATH
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.httpx_client import get_async_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL
@@ -61,13 +60,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 elif description.key == "batteries":
                     battery_data = await envoy_reader.battery_storage()
-                    if isinstance(battery_data, list):
+                    if isinstance(battery_data, list) and len(battery_data) > 0:
                         battery_dict = {}
                         for item in battery_data:
                             battery_dict[item["serial_num"]] = item
 
                         data[description.key] = battery_dict
 
+<<<<<<< HEAD
                 elif description.key == "total_battery_percentage":
                     battery_data = await envoy_reader.battery_storage()
                     if isinstance(battery_data, list):
@@ -96,6 +96,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     data[description.key] = await getattr(
                         envoy_reader, description.key
                     )()
+
+            data["grid_status"] = await envoy_reader.grid_status()
 
             _LOGGER.debug("Retrieved data from API: %s", data)
 
@@ -128,7 +130,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         NAME: name,
     }
 
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 

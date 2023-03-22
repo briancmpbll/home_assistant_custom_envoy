@@ -41,7 +41,7 @@ ENVOY_MODEL_S = "PC"
 ENVOY_MODEL_C = "P"
 ENVOY_MODEL_LEGACY = "P0"
 
-LOGIN_URL = "https://entrez.enphaseenergy.com/login"
+LOGIN_URL = "https://entrez.enphaseenergy.com/login_main_page"
 TOKEN_URL = "https://entrez.enphaseenergy.com/entrez_tokens"
 
 # paths for the enlighten 6 month owner token
@@ -80,6 +80,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     message_consumption_not_available = (
         "Consumption data not available for your Envoy device."
+    )
+
+    message_grid_status_not_available = (
+        "Grid status not available for your Envoy device."
     )
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -152,6 +156,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         )
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
+        )
+        await self._update_endpoint(
+            "endpoint_home_json_results", ENDPOINT_URL_HOME_JSON
         )
 
     async def _update_from_p_endpoint(self):
@@ -751,6 +758,15 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return self.message_battery_not_available
 
         return raw_json["storage"][0]
+
+    async def grid_status(self):
+        """Return grid status reported by Envoy"""
+        if self.endpoint_home_json_results is not None:
+            home_json = self.endpoint_home_json_results.json()
+            if "enpower" in home_json.keys() and "grid_status" in home_json["enpower"].keys():
+                return home_json["enpower"]["grid_status"]
+
+        return self.message_grid_status_not_available
 
     def run_in_console(self):
         """If running this module directly, print all the values in the console."""
