@@ -206,7 +206,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _async_post(self, url, data, cookies=None, **kwargs):
         _LOGGER.debug("HTTP POST Attempt: %s", url)
-        # _LOGGER.debug("HTTP POST Data: %s", data)
         try:
             async with self.async_client as client:
                 resp = await client.post(
@@ -304,7 +303,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         :returns True if cookie refreshed, False if it couldn't be
         """
         # Create HTTP Header
-        _LOGGER.error(self._token)
         self._authorization_header = {"Authorization": "Bearer " + self._token}
 
         # Fetch the Enphase Token status from the local Envoy
