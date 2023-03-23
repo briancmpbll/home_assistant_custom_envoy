@@ -16,7 +16,7 @@ DOMAIN = "enphase_envoy"
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
-ICON = "mdi:flash"
+#ICON = "mdi:flash"
 
 COORDINATOR = "coordinator"
 NAME = "name"
@@ -54,15 +54,31 @@ SENSORS = (
     ),
     SensorEntityDescription(
         key="discharge",
-        name="Current Battery Discharge",
+        name="Battery Power Discharge",
         native_unit_of_measurement=POWER_WATT,
         state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
     ),
     SensorEntityDescription(
         key="charge",
-        name="Current Battery Charge",
+        name="Battery Power Charge",
         native_unit_of_measurement=POWER_WATT,
         state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+    ),
+    SensorEntityDescription(
+        key="grid_import",
+        name="Grid Power Import",
+        native_unit_of_measurement=POWER_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+    ),
+    SensorEntityDescription(
+        key="grid_export",
+        name="Grid Power Export",
+        native_unit_of_measurement=POWER_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
     ),
     SensorEntityDescription(
         key="consumption",
@@ -108,7 +124,8 @@ SENSORS = (
         key="total_battery_percentage",
         name="Total Battery Percentage",
         native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.BATTERY
     ),
     SensorEntityDescription(
         key="current_battery_capacity",

@@ -129,6 +129,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.use_enlighten_owner_token = use_enlighten_owner_token
         self.token_refresh_buffer_seconds = token_refresh_buffer_seconds
         self.battery_power = 0
+        self.grid_power = 0
+        self.pv_power = 0
 
     @property
     def async_client(self):
@@ -543,7 +545,35 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                         production = float(match.group(1))
             else:
                 raise RuntimeError("No match for production, check REGEX  " + text)
+        self.pv_power = int(production)
         return int(production)
+    
+    async def grid_export(self):
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_production_json_results.json()
+            if raw_json["consumption"][1]["measurementType"] == "net-consumption":
+                grid = raw_json["consumption"][1]["wNow"]
+            else:
+                raise RuntimeError("No match for grid meter, check REGEX  " + text)
+        self.grid_power = int(grid)
+        if grid < 0:
+            return int(grid * -1 )
+        else:
+            return 0
+
+    async def grid_import(self):
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_production_json_results.json()
+            if raw_json["consumption"][1]["measurementType"] == "net-consumption":
+                grid = raw_json["consumption"][1]["wNow"]
+            else:
+                raise RuntimeError("No match for grid meter, check REGEX  " + text)
+        self.grid_power = int(grid)
+        if grid > 0:
+            return int(grid)
+        else:
+            return 0
+
 
     async def consumption(self):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
@@ -559,7 +589,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         raw_json = self.endpoint_production_json_results.json()
         consumption = raw_json["consumption"][0]["wNow"]
         if self.battery_power != 0:
-            consumption += self.battery_power
+            consumption = self.battery_power + self.pv_power + self.grid_power
         return int(consumption)
 
     async def discharge(self):
@@ -575,8 +605,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 power += item["real_power_mw"] 
         except (JSONDecodeError, KeyError, IndexError, TypeError, AttributeError):
                 return None
+        self.battery_power = int(power / 1000)
         if power > 0:
-            self.battery_power = power / 1000
             return int(power / 1000)
         else:
             return 0
@@ -595,8 +625,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         except (JSONDecodeError, KeyError, IndexError, TypeError, AttributeError):
                 return None
         if power < 0:
-            self.battery_power = power / 1000
-            return int(power / 1000) * -1
+            return int(power / -1000)
         else:
             return 0
 
