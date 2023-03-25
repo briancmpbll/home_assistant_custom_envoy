@@ -16,7 +16,7 @@ DOMAIN = "enphase_envoy"
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
-#ICON = "mdi:flash"
+ICON = "mdi:flash"
 
 COORDINATOR = "coordinator"
 NAME = "name"
