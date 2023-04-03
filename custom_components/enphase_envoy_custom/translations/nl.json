@@ -16,7 +16,7 @@
                     "host": "Envoy adres (naam of ip)",
                     "password": "Wachtwoord",
                     "username": "Gebruikersnaam",
-                    "serial": "Envoy serie nummer",
+                    "serial": "Envoy serienummer",
                     "use_enlighten": "Gebruik Enphase Token"
                 },
                 "description": "* Voor oudere modellen vul gebruikersnaam `installer` in zonder wachtwoord. \n* Voor nieuwere modellen vul gebruikersnaam 'envoy' in zonder wachtwoord. \n* Voor firmware D7.0.0 en hoger schakel `gebruik enphase token` in en gebruik Enphase website gebruikersnaam en wachtwoord en vul envoy serienummer in. \n* Voor alle andere modellen voer een geldige gebruikersnaam en wachtwoord in."
