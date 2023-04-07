@@ -2,7 +2,7 @@
     "config": {
         "abort": {
             "already_configured": "Apparaat is al geconfigureerd",
-            "reauth_successful": "Authenticatie vernieuwing was succesvol"
+            "reauth_successful": "Herauthenticatie was succesvol"
         },
         "error": {
             "cannot_connect": "Kan geen verbinding maken",
@@ -13,13 +13,13 @@
         "step": {
             "user": {
                 "data": {
-                    "host": "Envoy adres (naam of ip)",
+                    "host": "Host",
                     "password": "Wachtwoord",
                     "username": "Gebruikersnaam",
                     "serial": "Envoy serienummer",
-                    "use_enlighten": "Gebruik Enphase Token"
+                    "use_enlighten": "Gebruik Enlighten"
                 },
-                "description": "* Voor oudere modellen vul gebruikersnaam `installer` in zonder wachtwoord. \n* Voor nieuwere modellen vul gebruikersnaam 'envoy' in zonder wachtwoord. \n* Voor firmware D7.0.0 en hoger schakel `gebruik enphase token` in en gebruik Enphase website gebruikersnaam en wachtwoord en vul envoy serienummer in. \n* Voor alle andere modellen voer een geldige gebruikersnaam en wachtwoord in."
+                "description": "Voer voor nieuwere modellen gebruikersnaam 'envoy' in zonder wachtwoord. Voer voor oudere modellen gebruikersnaam `installer` in zonder wachtwoord. Voer voor alle andere modellen een geldige gebruikersnaam en wachtwoord in. Voor firmware D7.0.0 en hoger schakel `Gebruik Enlighten` in."
             }
         }
     }
