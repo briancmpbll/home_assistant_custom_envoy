@@ -926,7 +926,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             raw_json = self.endpoint_production_json_results.json()
             lifetime_production = raw_json["production"][1]["whLifetime"]
             """If envoy is used without meters connected, lifetime_production will be 0, so we use inverters whLifetime"""
-            if lifetime_production == 0:
+            if lifetime_production == "0":
                 lifetime_production = raw_json["production"][0]["whLifetime"]
         elif self.endpoint_type == ENVOY_MODEL_C or (
             self.endpoint_type == ENVOY_MODEL_S and not self.isMeteringEnabled
