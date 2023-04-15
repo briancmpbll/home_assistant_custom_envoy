@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL
+from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL, CONF_SHOW_PHASE, PHASE_SENSORS
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
@@ -37,8 +37,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         inverters=True,
 #        async_client=get_async_client(hass),
         use_enlighten_owner_token=config.get(CONF_USE_ENLIGHTEN, False),
+        show_phase=config.get(CONF_SHOW_PHASE, False),
         enlighten_serial_num=config[CONF_SERIAL],
-        https_flag='s' if config.get(CONF_USE_ENLIGHTEN, False) else ''
+        https_flag='s' if config.get(CONF_USE_ENLIGHTEN, False) else '' 
     )
 
     async def async_update_data():
@@ -74,6 +75,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             data["grid_status"] = await envoy_reader.grid_status()
 
+            if config.get(CONF_SHOW_PHASE, False):
+                for description in PHASE_SENSORS:
+                    data[description.key] = await getattr(
+                        envoy_reader, description.key
+                    )()
+
             _LOGGER.debug("Retrieved data from API: %s", data)
 
             return data
@@ -105,7 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         NAME: name,
     }
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups (entry, PLATFORMS)
 
     return True
 

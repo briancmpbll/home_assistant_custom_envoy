@@ -15,7 +15,8 @@
                 "data": {
                     "host": "Host",
                     "password": "Wachtwoord",
-                    "username": "Gebruikersnaam"
+                    "username": "Gebruikersnaam",
+                    "show_phase": "3 Fase Systeem"
                 },
                 "description": "Voer voor nieuwere modellen gebruikersnaam 'envoy' in zonder wachtwoord. Voer voor oudere modellen gebruikersnaam `installer` in zonder wachtwoord. Voer voor alle andere modellen een geldige gebruikersnaam en wachtwoord in."
             }
