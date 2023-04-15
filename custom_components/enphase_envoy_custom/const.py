@@ -43,7 +43,7 @@ SENSORS = (
         key="seven_days_production",
         name="Last Seven Days Energy Production",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -70,7 +70,7 @@ SENSORS = (
         key="seven_days_consumption",
         name="Last Seven Days Energy Consumption",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -126,7 +126,7 @@ PHASE_SENSORS = (
         key="seven_days_production_l1",
         name="Last Seven Days Energy Production L1",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -153,7 +153,7 @@ PHASE_SENSORS = (
         key="seven_days_production_l2",
         name="Last Seven Days Energy Production L2",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -180,7 +180,7 @@ PHASE_SENSORS = (
         key="seven_days_production_l3",
         name="Last Seven Days Energy Production L3",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -207,7 +207,7 @@ PHASE_SENSORS = (
         key="seven_days_consumption_l1",
         name="Last Seven Days Energy Consumption L1",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -234,7 +234,7 @@ PHASE_SENSORS = (
         key="seven_days_consumption_l2",
         name="Last Seven Days Energy Consumption L2",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -261,7 +261,7 @@ PHASE_SENSORS = (
         key="seven_days_consumption_l3",
         name="Last Seven Days Energy Consumption L3",
         native_unit_of_measurement=ENERGY_WATT_HOUR,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
