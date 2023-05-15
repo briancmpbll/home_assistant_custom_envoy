@@ -15,9 +15,11 @@
                 "data": {
                     "host": "Host",
                     "password": "Wachtwoord",
-                    "username": "Gebruikersnaam"
+                    "username": "Gebruikersnaam",
+                    "serial": "Envoy serienummer",
+                    "use_enlighten": "Gebruik Enlighten"
                 },
-                "description": "Voer voor nieuwere modellen gebruikersnaam 'envoy' in zonder wachtwoord. Voer voor oudere modellen gebruikersnaam `installer` in zonder wachtwoord. Voer voor alle andere modellen een geldige gebruikersnaam en wachtwoord in."
+                "description": "Voer voor nieuwere modellen gebruikersnaam 'envoy' in zonder wachtwoord. Voer voor oudere modellen gebruikersnaam `installer` in zonder wachtwoord. Voer voor alle andere modellen een geldige gebruikersnaam en wachtwoord in. Voor firmware D7.0.0 en hoger schakel `Gebruik Enlighten` in."
             }
         }
     }
