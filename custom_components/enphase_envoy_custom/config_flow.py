@@ -92,6 +92,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by zeroconf discovery."""
         serial = discovery_info.properties["serialnum"]
         await self.async_set_unique_id(serial)
+
+        #75 If system option to enable newly discoverd entries is off (by user) and uniqueid is this serial then skip updating ip
+        for entry in self._async_current_entries(include_ignore=False):
+            if entry.pref_disable_new_entities and entry.unique_id is not None:
+                if entry.unique_id == serial:
+                    _LOGGER.debug("Envoy autodiscovery/ip update disabled for: %s, IP detected: %s %s",serial, discovery_info.host,entry.unique_id)
+                    return self.async_abort(reason="pref_disable_new_entities")
+                
+        # autodiscovery is updating the ip address of an existing envoy with matching serial to new detected ip adress
         self.ip_address = discovery_info.host
         self._abort_if_unique_id_configured({CONF_HOST: self.ip_address})
         for entry in self._async_current_entries(include_ignore=False):
