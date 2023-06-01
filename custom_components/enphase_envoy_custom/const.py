@@ -10,11 +10,18 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+
+
+from homeassistant.components.switch import (
+    SwitchDeviceClass,
+    SwitchEntityDescription
+)
+
 from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform, PERCENTAGE
 
 DOMAIN = "enphase_envoy"
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
 
 ICON = "mdi:flash"
 
@@ -127,4 +134,10 @@ GRID_STATUS_BINARY_SENSOR = BinarySensorEntityDescription(
     key="grid_status",
     name="Grid Status",
     device_class=BinarySensorDeviceClass.CONNECTIVITY
+)
+
+PRODUCTION_SWITCH = SwitchEntityDescription(
+    key="production_switch",
+    name="Production switch",
+    device_class=SwitchDeviceClass.SWITCH
 )

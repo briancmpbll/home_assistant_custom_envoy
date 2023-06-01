@@ -31,6 +31,7 @@ ENDPOINT_URL_PRODUCTION_INVERTERS = "http{}://{}/api/v1/production/inverters"
 ENDPOINT_URL_PRODUCTION = "http{}://{}/production"
 ENDPOINT_URL_CHECK_JWT = "https://{}/auth/check_jwt"
 ENDPOINT_URL_ENSEMBLE_INVENTORY = "http{}://{}/ivp/ensemble/inventory"
+ENDPOINT_URL_POWER_FORCED_OFF = "http{}://{}/ivp/mod/603980032/mode/power"
 ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
 
 # pylint: disable=pointless-string-statement
@@ -81,6 +82,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     message_grid_status_not_available = (
         "Grid status not available for your Envoy device."
     )
+    
+    message_power_forced_off_not_available = (
+        "Powered forced off not available for your Envoy device."
+    )
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -110,6 +115,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_production_inverters = None
         self.endpoint_production_results = None
         self.endpoint_ensemble_json_results = None
+        self.endpoint_power_forced_off_results = None
         self.endpoint_home_json_results = None
         self.isMeteringEnabled = False  # pylint: disable=invalid-name
         self._async_client = async_client
@@ -153,6 +159,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         )
         await self._update_endpoint(
             "endpoint_home_json_results", ENDPOINT_URL_HOME_JSON
+        )
+        await self._update_endpoint(
+            "endpoint_power_forced_off_results", ENDPOINT_URL_POWER_FORCED_OFF
         )
 
     async def _update_from_p_endpoint(self):
@@ -214,6 +223,21 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 )
                 _LOGGER.debug("HTTP POST %s: %s: %s", url, resp, resp.text)
                 _LOGGER.debug("HTTP POST Cookie: %s", resp.cookies)
+                return resp
+        except httpx.TransportError:  # pylint: disable=try-except-raise
+            raise
+        
+    async def _async_put(self, url, data, cookies=None, **kwargs):
+        formatted_url=url.format(self.https_flag, self.host)
+        _LOGGER.debug("HTTP PUT Attempt: %s", formatted_url)
+        # _LOGGER.debug("HTTP PUT Data: %s", data)
+        try:
+            async with self.async_client as client:
+                resp = await client.put(
+                    formatted_url, cookies=cookies, data=data, timeout=30, **kwargs
+                )
+                _LOGGER.debug("HTTP PUT %s: %s: %s", formatted_url, resp, resp.text)
+                _LOGGER.debug("HTTP PUT Cookie: %s", resp.cookies)
                 return resp
         except httpx.TransportError:  # pylint: disable=try-except-raise
             raise
@@ -741,7 +765,24 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 return home_json["enpower"]["grid_status"]
 
         return self.message_grid_status_not_available
+        
+    async def power_forced_off(self):
+        """Return whether power is forced off, reported by Envoy"""
+        if self.endpoint_power_forced_off_results is not None:
+            power_forced_off_json = self.endpoint_power_forced_off_results.json()
+            if "powerForcedOff" in power_forced_off_json.keys():
+                return power_forced_off_json["powerForcedOff"]
 
+        return self.message_power_forced_off_not_available
+
+    async def enable_power_forced_off(self):
+        """Force the panels off: no production"""
+        await self._async_put(ENDPOINT_URL_POWER_FORCED_OFF, '{"length":1,"arr":[1]}', None)
+        
+    async def disable_power_forced_off(self):
+        """Enable the panels: enable production"""
+        await self._async_put(ENDPOINT_URL_POWER_FORCED_OFF, '{"length":1,"arr":[0]}', None)
+        
     def run_in_console(self):
         """If running this module directly, print all the values in the console."""
         print("Reading...")
