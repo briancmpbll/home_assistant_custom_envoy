@@ -100,6 +100,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     ):
         """Init the EnvoyReader."""
         self.host = host.lower()
+        # IPv6 addresses need to be enclosed in brackets
+        if ":" in self.host and not self.host.startswith("["):
+            self.host = f"[{self.host}]"
         self.username = username
         self.password = password
         self.get_inverters = inverters
