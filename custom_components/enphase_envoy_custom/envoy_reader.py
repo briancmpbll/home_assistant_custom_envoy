@@ -11,6 +11,7 @@ from json.decoder import JSONDecodeError
 import httpx
 from bs4 import BeautifulSoup
 from envoy_utils.envoy_utils import EnvoyUtils
+from homeassistant.util.network import is_ipv6_address
 
 #
 # Legacy parser is only used on ancient firmwares
@@ -100,6 +101,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     ):
         """Init the EnvoyReader."""
         self.host = host.lower()
+        # IPv6 addresses need to be enclosed in brackets
+        if is_ipv6_address(self.host):
+            self.host = f"[{self.host}]"
         self.username = username
         self.password = password
         self.get_inverters = inverters
