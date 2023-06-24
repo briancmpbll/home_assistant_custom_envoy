@@ -73,6 +73,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )()
 
             data["grid_status"] = await envoy_reader.grid_status()
+            data["charge"] = await envoy_reader.charge()
+            data["discharge"] = await envoy_reader.discharge()
 
             _LOGGER.debug("Retrieved data from API: %s", data)
 
