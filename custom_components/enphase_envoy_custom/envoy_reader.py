@@ -136,6 +136,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                                                        headers=self._authorization_header,
                                                        cookies=self._cookies)
 
+    @property
+    def non_local_async_client(self):
+        """Return the httpx client for non-local usage."""
+        return self._async_client or httpx.AsyncClient(verify=True,
+                                                       headers=self._authorization_header,
+                                                       cookies=self._cookies)
+
     async def _update(self):
         """Update the data."""
         if self.endpoint_type == ENVOY_MODEL_S:
@@ -208,11 +215,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 if attempt == 2:
                     raise
 
-    async def _async_post(self, url, data, cookies=None, **kwargs):
+    async def _async_post(self, url, data, cookies=None, client=None, **kwargs):
         _LOGGER.debug("HTTP POST Attempt: %s", url)
+        if client is None:
+            client = self.async_client
         # _LOGGER.debug("HTTP POST Data: %s", data)
         try:
-            async with self.async_client as client:
+            async with client:
                 resp = await client.post(
                     url, cookies=cookies, data=data, timeout=30, **kwargs
                 )
@@ -227,7 +236,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         Try to fetch the owner token json from Enlighten API
         :return:
         """
-        async with self.async_client as client:
+        async with self.non_local_async_client as client:
             # login to the enlighten UI
 
             resp = await client.get(ENLIGHTEN_AUTH_FORM_URL)
@@ -270,13 +279,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         elif self.commissioned == "True" or self.commissioned == "Commissioned":
             # Login to website and store cookie
-            resp = await self._async_post(LOGIN_URL, data=payload_login)
+            resp = await self._async_post(LOGIN_URL, data=payload_login, client=self.non_local_async_client)
             payload_token = {
                 "Site": self.enlighten_site_id,
                 "serialNum": self.enlighten_serial_num,
             }
             response = await self._async_post(
-                TOKEN_URL, data=payload_token, cookies=resp.cookies
+                TOKEN_URL, data=payload_token, cookies=resp.cookies, client=self.non_local_async_client
             )
 
             parsed_html = BeautifulSoup(response.text, features="html.parser")
@@ -287,10 +296,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         else:
             # Login to website and store cookie
-            resp = await self._async_post(LOGIN_URL, data=payload_login)
+            resp = await self._async_post(LOGIN_URL, data=payload_login, client=self.non_local_async_client)
             payload_token = {"uncommissioned": "true", "Site": ""}
             response = await self._async_post(
-                TOKEN_URL, data=payload_token, cookies=resp.cookies
+                TOKEN_URL, data=payload_token, cookies=resp.cookies, client=self.non_local_async_client
             )
             soup = BeautifulSoup(response.text, features="html.parser")
             self._token = soup.find("textarea").contents[
