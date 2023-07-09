@@ -19,7 +19,7 @@
                     "serial": "Envoy serienummer",
                     "use_enlighten": "Gebruik Enlighten"
                 },
-                "description": "Voer voor nieuwere modellen gebruikersnaam 'envoy' in zonder wachtwoord. Voer voor oudere modellen gebruikersnaam `installer` in zonder wachtwoord. Voer voor alle andere modellen een geldige gebruikersnaam en wachtwoord in. Voor firmware D7.0.0 en hoger schakel `Gebruik Enlighten` in."
+                "description": "- Voor firmware D7.0.0 en hoger controleer of voer Host IP adres, Enphase website gebruikersnaam en wachtwoord, Envoy serienummer in en schakel `Gebruik Enlighten` in. \n- Voor oudere modellen schakel `Gebruik Enlighten` niet in en voer gebruikersnaam `envoy` zonder wachtwoord of `installer` zonder wachtwoord of een geldige gebruikersnaam en wachtwoord in en controleer of voer het Host IP adres in."
             }
         }
     }
