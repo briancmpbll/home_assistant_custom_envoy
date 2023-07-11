@@ -626,10 +626,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         if self.endpoint_type == ENVOY_MODEL_S and self.isMeteringEnabled:
             raw_json = self.endpoint_production_json_results.json()
-            idx = 1 if self.isMeteringEnabled else 0
             try:
                 return int(
-                    raw_json["production"][idx]["lines"][phase_map[phase]]["whToday"]
+                    raw_json["production"][1]["lines"][phase_map[phase]]["whToday"]
                 )
             except (KeyError, IndexError):
                 return None
@@ -748,11 +747,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         if self.endpoint_type == ENVOY_MODEL_S and self.isMeteringEnabled:
             raw_json = self.endpoint_production_json_results.json()
-            idx = 1 if self.isMeteringEnabled else 0
 
             try:
                 return int(
-                    raw_json["production"][idx]["lines"][phase_map[phase]]["whLifetime"]
+                    raw_json["production"][1]["lines"][phase_map[phase]]["whLifetime"]
                 )
             except (KeyError, IndexError):
                 return None
