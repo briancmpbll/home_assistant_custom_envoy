@@ -203,6 +203,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                             await self._getEnphaseToken()
                         continue
                     _LOGGER.debug("Fetched from %s: %s: %s", url, resp, resp.text)
+                    if resp.status_code == 404:
+                        return None
                     return resp
             except httpx.TransportError:
                 if attempt == 2:
