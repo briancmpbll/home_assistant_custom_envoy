@@ -670,7 +670,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         raw_json = self.endpoint_production_json_results.json()
         try:
-            return int(raw_json["consumption"][0]["lines"][0]["whToday"])
+            return int(raw_json["consumption"][0][phase_map[phase]]["whToday"])
         except (KeyError, IndexError):
             return None
 
