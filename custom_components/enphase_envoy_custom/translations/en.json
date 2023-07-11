@@ -19,7 +19,7 @@
           "serial": "envoy serial number",
           "use_enlighten": "Use Enlighten"
         },
-        "description": "- If your Envoy is on Firmware 7.x or later, validate or enter the Host IP address of your Envoy, your Enphase website username, password, Envoy serial number, and tick the `Use Enlighten` box.\n- For older models do not tick `Use Enlighten` and use either usernames `envoy` without a password, `installer` withouth a password or a valid username and password and validate or enter the Host ip address."
+        "description": "- If your Envoy is on Firmware 7.x or later, validate or enter the Host IP address of your Envoy, your Enphase website username, password, Envoy serial number, and tick the `Use Enlighten` box.\n- For older models do not tick `Use Enlighten` and use either usernames `envoy` without a password, `installer` without a password or a valid username and password and validate or enter the Host ip address."
       }
     }
   }
