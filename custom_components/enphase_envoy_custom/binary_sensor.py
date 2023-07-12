@@ -5,7 +5,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 
-from .const import COORDINATOR, DOMAIN, NAME, GRID_STATUS_BINARY_SENSOR, ICON
+from .const import COORDINATOR, DOMAIN, NAME, BINARY_SENSORS, ICON
 
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: AddEntitiesCallback
@@ -15,17 +15,19 @@ async def async_setup_entry(
   name = data[NAME]
 
   entities = []
-  if (coordinator.data.get("grid_status") is not None):
-    entities.append(
-        EnvoyGridStatusEntity(
-            GRID_STATUS_BINARY_SENSOR,
-            GRID_STATUS_BINARY_SENSOR.name,
-            name,
-            config_entry.unique_id,
-            None,
-            coordinator,
-        )
-    )
+  for sensor_description in BINARY_SENSORS:
+    if sensor_description.key == "grid_status":
+        if coordinator.data.get("grid_status") is not None:
+            entities.append(
+                EnvoyGridStatusEntity(
+                    sensor_description,
+                    sensor_description.name,
+                    name,
+                    config_entry.unique_id,
+                    None,
+                    coordinator,
+                )
+            )
 
   async_add_entities(entities)
 
