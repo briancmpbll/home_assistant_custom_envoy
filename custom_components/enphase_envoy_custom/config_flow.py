@@ -7,6 +7,7 @@ from typing import Any
 
 from .envoy_reader import EnvoyReader
 import httpx
+import ipaddress
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -47,6 +48,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> EnvoyRead
 
     return envoy_reader
 
+def _is_ipv4(address):
+    try:
+        ip = ipaddress.ip_address(address)
+        return isinstance(ip, ipaddress.IPv4Address)
+    except ValueError:
+        _LOGGER.error("%s is an invalid IP address", address)
+        return False
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Enphase Envoy."""
@@ -90,19 +98,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, discovery_info: zeroconf.ZeroconfServiceInfo
     ) -> FlowResult:
         """Handle a flow initialized by zeroconf discovery."""
+        self.ip_address = discovery_info.host
+        if not _is_ipv4(self.ip_address):
+            return self.async_abort(reason="ipv6_not_supported")
+        
         serial = discovery_info.properties["serialnum"]
         await self.async_set_unique_id(serial)
 
-        #75 If system option to enable newly discoverd entries is off (by user) and uniqueid is this serial then skip updating ip
-        for entry in self._async_current_entries(include_ignore=False):
-            if entry.pref_disable_new_entities and entry.unique_id is not None:
-                if entry.unique_id == serial:
-                    _LOGGER.debug("Envoy autodiscovery/ip update disabled for: %s, IP detected: %s %s",serial, discovery_info.host,entry.unique_id)
-                    return self.async_abort(reason="pref_disable_new_entities")
-                
         # autodiscovery is updating the ip address of an existing envoy with matching serial to new detected ip adress
-        self.ip_address = discovery_info.host
-        self._abort_if_unique_id_configured({CONF_HOST: self.ip_address})
+        self._abort_if_unique_id_configured()
         for entry in self._async_current_entries(include_ignore=False):
             if (
                 entry.unique_id is None
