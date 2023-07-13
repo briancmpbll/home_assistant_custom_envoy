@@ -112,6 +112,14 @@ SENSORS = (
     ),
 )
 
+BINARY_SENSORS = (
+    BinarySensorEntityDescription(
+        key="grid_status",
+        name="Grid Status",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
+    ),
+)
+  
 PHASE_SENSORS = (
     SensorEntityDescription(
         key="production_l1",
@@ -249,10 +257,4 @@ BATTERY_ENERGY_CHARGED_SENSOR = SensorEntityDescription(
     native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
     state_class=SensorStateClass.TOTAL,
     device_class=SensorDeviceClass.ENERGY
-)
-
-GRID_STATUS_BINARY_SENSOR = BinarySensorEntityDescription(
-    key="grid_status",
-    name="Grid Status",
-    device_class=BinarySensorDeviceClass.CONNECTIVITY
 )
