@@ -119,7 +119,7 @@ BINARY_SENSORS = (
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
     ),
 )
-  
+
 PHASE_SENSORS = (
     SensorEntityDescription(
         key="production_l1",
