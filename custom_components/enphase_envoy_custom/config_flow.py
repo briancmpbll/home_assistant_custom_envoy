@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import DOMAIN, CONF_SERIAL, CONF_USE_ENLIGHTEN
+from .const import DOMAIN, CONF_SERIAL, CONF_USE_ENLIGHTEN, DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -196,6 +196,37 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return EnvoyOptionsFlowHandler(config_entry)
+
+class EnvoyOptionsFlowHandler(config_entries.OptionsFlow):
+    """Envoy config flow options handler."""
+
+    def __init__(self, config_entry):
+        """Initialize Envoy options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(self, _user_input=None):
+        """Manage the options."""
+        return await self.async_step_user()
+
+    async def async_step_user(self, user_input=None):
+        """Handle a flow initialized by the user."""
+
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        schema = {
+            vol.Optional(
+                "data_interval",
+                default=self.config_entry.options.get(
+                    "data_interval", DEFAULT_SCAN_INTERVAL
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=5)),
+        }
+        return self.async_show_form(step_id="user", data_schema=vol.Schema(schema))
 
 class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
