@@ -26,6 +26,8 @@ ICON = "mdi:flash"
 COORDINATOR = "coordinator"
 NAME = "name"
 
+DEFAULT_SCAN_INTERVAL = 60  # default in seconds
+
 CONF_SERIAL = "serial"
 CONF_USE_ENLIGHTEN = "use_enlighten"
 
