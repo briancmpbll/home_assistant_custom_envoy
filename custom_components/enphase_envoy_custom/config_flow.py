@@ -104,8 +104,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     return self.async_abort(reason="pref_disable_new_entities")
                 
         # autodiscovery is updating the ip address of an existing envoy with matching serial to new detected ip adress
-        for disc in discovery_info.properties:
-            _LOGGER.debug(disc)
+        _LOGGER.debug(discovery_info)
 
         self.ip_address = discovery_info.host
         self._abort_if_unique_id_configured({CONF_HOST: self.ip_address})
