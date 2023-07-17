@@ -97,10 +97,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         adapters = await network.async_get_adapters()
 
         for adapter in adapters:
+            _LOGGER.exception(adapter.default)
             for ip_info in adapter["ipv4"]:
-                local_ip = ip_info["address"]
-                network_prefix = ip_info["network_prefix"]
-                ip_net = ip_network(f"{local_ip}/{network_prefix}", False)
+                _LOGGER.exception(ip_info["address"])
+            for ip6_info in adapter["ipv6"]:
+                _LOGGER.exception(ip6_info["address"])
 
         #75 If system option to enable newly discoverd entries is off (by user) and uniqueid is this serial then skip updating ip
         for entry in self._async_current_entries(include_ignore=False):
