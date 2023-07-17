@@ -54,7 +54,7 @@ async def ipv4asdefault(hass: HomeAssistant):
     for adapter in adapters:
         if adapter["default"]:
             return adapter["ipv4"] is not None
-    return True
+    return False
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Enphase Envoy."""
