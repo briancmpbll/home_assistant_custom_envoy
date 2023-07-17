@@ -63,7 +63,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def _async_generate_schema(self):
         """Generate schema."""
         schema = {}
-
+        _LOGGER.debug("_async_generate_schema")
         if self.ip_address:
             schema[vol.Required(CONF_HOST, default=self.ip_address)] = vol.In(
                 [self.ip_address]
@@ -80,6 +80,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def _async_current_hosts(self):
         """Return a set of hosts."""
+        _LOGGER.debug("_async_current_hosts")
         return {
             entry.data[CONF_HOST]
             for entry in self._async_current_entries(include_ignore=False)
@@ -90,11 +91,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, discovery_info: zeroconf.ZeroconfServiceInfo
     ) -> FlowResult:
         """Handle a flow initialized by zeroconf discovery."""
+        _LOGGER.debug("async_step_zeroconf")
         serial = discovery_info.properties["serialnum"]
         await self.async_set_unique_id(serial)
 
         #75 If system option to enable newly discoverd entries is off (by user) and uniqueid is this serial then skip updating ip
         for entry in self._async_current_entries(include_ignore=False):
+            _LOGGER.debug("entry: %s",entry.data)
             if entry.pref_disable_new_entities and entry.unique_id is not None:
                 if entry.unique_id == serial:
                     _LOGGER.debug("Envoy autodiscovery/ip update disabled for: %s, IP detected: %s %s",serial, discovery_info.host,entry.unique_id)
@@ -122,6 +125,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_reauth(self, user_input):
         """Handle configuration by re-auth."""
+        _LOGGER.debug("async_step_reauth")
         self._reauth_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
@@ -129,6 +133,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def _async_envoy_name(self) -> str:
         """Return the name of the envoy."""
+        _LOGGER.debug("_async_envoy_name")
         if self.unique_id:
             return f"{ENVOY} {self.unique_id}"
         return ENVOY
@@ -136,6 +141,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def _async_set_unique_id_from_envoy(self, envoy_reader: EnvoyReader) -> bool:
         """Set the unique id by fetching it from the envoy."""
         serial = None
+        _LOGGER.debug("_async_set_unique_id_from_envoy")
         with contextlib.suppress(httpx.HTTPError):
             serial = await envoy_reader.get_full_serial_number()
         if serial:
@@ -148,7 +154,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle the initial step."""
         errors = {}
-
+        _LOGGER.debug("async_step_user")
         if user_input is not None:
             if (
                 not self._reauth_entry
