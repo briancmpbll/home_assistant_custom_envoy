@@ -16,11 +16,3 @@ This is a HACS custom integration for enphase envoys with firmware version 7.X. 
       When configuring the Envoy with firmware 7 or higher specify your Enphase Enlighten username and password, the envoy serial number and check the 'Use Enlighten' box at the bottom. This will allow the integration to collect a token from the enphase website and use it to access the Envoy locally. It does this at first configuration, at each HA startup or at reload of the integration. The Enphase web-site is known to be slow or satured at times. When an *Unknown Error* is reported during configuration try again until success. [#81](https://github.com/briancmpbll/home_assistant_custom_envoy/issues/81) \
       \
       Upon changing your password on the Enphase web site you will have to update the password information in HA. To update it, delete the envoy integration from the Settings / Integrations window. Restart HA and then in Integrations window configure it again. All data is kept and will show again once it's configured.
-
-  - [#75 Invalid Port and IPV6 autodetect](https://github.com/briancmpbll/home_assistant_custom_envoy/issues/75) \
-      HA performs auto discovery for Envoy on the network. When it identifies an Envoy it will use the Envoy serial number 
-      to identify a configured Envoy and then update the IP addres of the Envoy. If the auto discovery returns an IPV6 address it will update the Envoy with reported IPv6 address even if it was configured with an IPv4 address before. This causes the integration to fail as IPv6 addresses cause issues in the communication to the Envoy. \
-      \
-      To solve this and prevent this from happening again, remove the Envoy in the Integrations panel, restart HA and configure the Envoy again with the IPv4 address. This may require to change the IP address to the IPv4 on the auto detected Envoy or add manually an Envoy Integration. \
-      \
-      Then open the *System options* on the Envoy Integrations menu (3 vertical dots). In the System options panel de-activate the *Enable Newly Added Entities* option to turn it off. This will cause the Envoy Intgeration to ignore autodetect updates and keep the configured IP address. Make sure the Envoy is using a fixed IP address to avoid loosing connection if it changes its IP.
