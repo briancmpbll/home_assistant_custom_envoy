@@ -10,6 +10,7 @@ import httpx
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.components import network
 from homeassistant.components import zeroconf
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant, callback
@@ -92,6 +93,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by zeroconf discovery."""
         serial = discovery_info.properties["serialnum"]
         await self.async_set_unique_id(serial)
+
+        adapters = await network.async_get_adapters()
+
+        for adapter in adapters:
+            for ip_info in adapter["ipv4"]:
+                local_ip = ip_info["address"]
+                network_prefix = ip_info["network_prefix"]
+                ip_net = ip_network(f"{local_ip}/{network_prefix}", False)
 
         #75 If system option to enable newly discoverd entries is off (by user) and uniqueid is this serial then skip updating ip
         for entry in self._async_current_entries(include_ignore=False):
