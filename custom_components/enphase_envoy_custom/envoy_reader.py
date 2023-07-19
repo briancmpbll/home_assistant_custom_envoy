@@ -396,12 +396,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         response = await self._async_fetch_with_retry(
             inverters_url, auth=inverters_auth
         )
-        _LOGGER.debug(
-            "Fetched from %s: %s: %s",
-            inverters_url,
-            response,
-            response.text,
-        )
         if response.status_code == 401:
             response.raise_for_status()
         self.endpoint_production_inverters = response
