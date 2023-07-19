@@ -108,6 +108,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.password = password
         self.get_inverters = inverters
         self.endpoint_type = None
+        self.has_grid_status = True
         self.serial_number_last_six = None
         self.endpoint_production_json_results = None
         self.endpoint_production_v1_results = None
@@ -155,9 +156,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
         )
-        await self._update_endpoint(
-            "endpoint_home_json_results", ENDPOINT_URL_HOME_JSON
-        )
+        if self.has_grid_status:
+            await self._update_endpoint(
+                "endpoint_home_json_results", ENDPOINT_URL_HOME_JSON
+            )
 
     async def _update_from_p_endpoint(self):
         """Update from P endpoint."""
@@ -839,11 +841,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def grid_status(self):
         """Return grid status reported by Envoy"""
-        if self.endpoint_home_json_results is not None:
+        if self.has_grid_status and self.endpoint_home_json_results is not None:
             home_json = self.endpoint_home_json_results.json()
             if ("enpower" in home_json.keys() and "grid_status" in home_json["enpower"].keys()):
                 return home_json["enpower"]["grid_status"]
-
+        self.has_grid_status = False
         return None
 
     def run_in_console(self):
