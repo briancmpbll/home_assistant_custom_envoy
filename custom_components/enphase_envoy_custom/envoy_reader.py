@@ -461,6 +461,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             and self.endpoint_production_results.status_code == 200
         ):
             self.endpoint_type = ENVOY_MODEL_LEGACY  # older Envoy-C
+            self.get_inverters = False # don't get inverters for this model
             return
 
         raise RuntimeError(
