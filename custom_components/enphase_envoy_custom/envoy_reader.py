@@ -769,10 +769,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def power_forced_off(self):
         """Return whether power is forced off, reported by Envoy"""
         if self.endpoint_power_forced_off_results is not None:
-            power_forced_off_json = self.endpoint_power_forced_off_results.json()
-            if "powerForcedOff" in power_forced_off_json.keys():
-                return power_forced_off_json["powerForcedOff"]
-
+            try:
+                power_forced_off_json = self.endpoint_power_forced_off_results.json()
+                if "powerForcedOff" in power_forced_off_json.keys():
+                    return power_forced_off_json["powerForcedOff"]
+            except JSONDecodeError as ex:
+                _LOGGER.warning("Could not decode power off json: {}, response: {}".format(ex, self.endpoint_power_forced_off_results))
+                return False
+            
         return self.message_power_forced_off_not_available
 
     async def enable_power_forced_off(self):
