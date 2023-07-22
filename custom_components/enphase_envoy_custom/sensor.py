@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import BATTERY_ENERGY_DISCHARGED_SENSOR, BATTERY_ENERGY_CHARGED_SENSOR, COORDINATOR, DOMAIN, NAME, SENSORS, ICON
+from .const import BATTERY_ENERGY_DISCHARGED_SENSOR, BATTERY_ENERGY_CHARGED_SENSOR, COORDINATOR, DOMAIN, NAME, SENSORS, ICON, PHASE_SENSORS
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -123,6 +123,23 @@ async def async_setup_entry(
                     coordinator,
                 )
             )
+
+    for sensor_description in PHASE_SENSORS:
+        data = coordinator.data.get(sensor_description.key)
+        if data == None:
+            continue
+
+        entity_name = f"{name} {sensor_description.name}"
+        entities.append(
+            CoordinatedEnvoyEntity(
+                sensor_description,
+                entity_name,
+                name,
+                config_entry.unique_id,
+                None,
+                coordinator,
+            )
+        )
 
     async_add_entities(entities)
 

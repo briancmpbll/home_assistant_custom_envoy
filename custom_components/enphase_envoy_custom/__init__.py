@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL
+from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL, PHASE_SENSORS, DEFAULT_SCAN_INTERVAL
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
@@ -26,6 +26,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Enphase Envoy from a config entry."""
 
     config = entry.data
+    options = entry.options
     name = config[CONF_NAME]
 
     envoy_reader = EnvoyReader(
@@ -72,6 +73,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         envoy_reader, description.key
                     )()
 
+            for description in PHASE_SENSORS:
+                if description.key.startswith("production_"):
+                    data[description.key] = await envoy_reader.production_phase(
+                        description.key
+                    )
+                elif description.key.startswith("consumption_"):
+                    data[description.key] = await envoy_reader.consumption_phase(
+                        description.key
+                    )
+                elif description.key.startswith("daily_production_"):
+                    data[description.key] = await envoy_reader.daily_production_phase(
+                        description.key
+                    )
+                elif description.key.startswith("daily_consumption_"):
+                    data[description.key] = await envoy_reader.daily_consumption_phase(
+                        description.key
+                    )
+                elif description.key.startswith("lifetime_production_"):
+                    data[
+                        description.key
+                    ] = await envoy_reader.lifetime_production_phase(description.key)
+                elif description.key.startswith("lifetime_consumption_"):
+                    data[
+                        description.key
+                    ] = await envoy_reader.lifetime_consumption_phase(description.key)
+                    
             data["grid_status"] = await envoy_reader.grid_status()
             data["power_forced_off"] = await envoy_reader.power_forced_off()
             data["api"] = envoy_reader
@@ -85,7 +112,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=f"envoy {name}",
         update_method=async_update_data,
-        update_interval=SCAN_INTERVAL,
+        update_interval=timedelta(
+            seconds=options.get("data_interval", DEFAULT_SCAN_INTERVAL)
+        )
     )
 
     try:
