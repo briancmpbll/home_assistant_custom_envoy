@@ -383,7 +383,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if not self.endpoint_type:
             await self.detect_model()
         else:
-            _LOGGER.debug("Using Model: %s ",self. endpoint_type)
+            _LOGGER.debug(
+                "Using Model: %s (HTTP%s, Metering enabled: %s, Get Inverters: %s)",
+                self.endpoint_type, 
+                self.https_flag,
+                self.isMeteringEnabled,
+                self.get_inverters
+            )
             await self._update()
 
         if not self.get_inverters or not getInverters:
@@ -398,6 +404,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             inverters_url, auth=inverters_auth
         )
         if response.status_code == 401:
+            if self.endpoint_type in [ENVOY_MODEL_C, ENVOY_MODEL_LEGACY]:
+                self.get_inverters = False
+                _LOGGER.warning("Error 401 for getting invertors, disabling inverters collection")
             response.raise_for_status()
         self.endpoint_production_inverters = response
         return
@@ -799,9 +808,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
 
         """Only return data if Envoy supports retrieving Inverter data"""
-        if self.endpoint_type == ENVOY_MODEL_LEGACY:
+        if not self.get_inverters:
             return None
-
+        
         response_dict = {}
         try:
             for item in self.endpoint_production_inverters.json():
