@@ -195,7 +195,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     resp = await client.get(
                         url, headers=self._authorization_header, timeout=30, **kwargs
                     )
-                    if resp.status_code == 401 and attempt < 2:
+                    if resp.status_code == 401 and attempt < 2 and self.use_enlighten_owner_token:
                         _LOGGER.debug(
                             "Received 401 from Envoy; refreshing token, attempt %s of 2",
                             attempt+1,
@@ -203,6 +203,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                         could_refresh_cookies = await self._refresh_token_cookies()
                         if not could_refresh_cookies:
                             await self._getEnphaseToken()
+                        continue
+                    # don't try token and cookies refresh for legacy envoy
+                    elif resp.status_code == 401 and attempt < 2:
+                        _LOGGER.debug(
+                            "Received 401 from Envoy; retrying, attempt %s of 2",
+                            attempt+1,
+                            )
                         continue
                     _LOGGER.debug("Fetched from %s: %s: %s", url, resp, resp.text)
                     if resp.status_code == 404:
@@ -503,6 +510,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return response.text.split("<sn>")[1].split("</sn>")[0]
         match = SERIAL_REGEX.search(response.text)
         if match:
+            # if info.xml is in html format we're dealing with ENVOY R
+            self.get_inverters = False
             return match.group(1)
 
     def create_connect_errormessage(self):
