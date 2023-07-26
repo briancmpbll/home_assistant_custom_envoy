@@ -198,7 +198,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     )
                     if resp.status_code == 401 and attempt < 2:
                         if self.use_enlighten_owner_token:
-                            _LOGGER.warning(
+                            _LOGGER.debug(
                                 "Debug Info:Received 401 from Envoy; refreshing token, attempt %s of 2: %s: %s: Header:%s",
                                 attempt+1,
                                 url,
@@ -211,7 +211,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                             continue
                         # don't try token and cookies refresh for legacy envoy
                         else:
-                            _LOGGER.warning(
+                            _LOGGER.debug(
                                 "Debug Info:Received 401 from Envoy; retrying, attempt %s of 2: %s: %s: Header:%s",
                                 attempt+1,
                                 url,
@@ -326,7 +326,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """
         # Create HTTP Header
         self._authorization_header = {"Authorization": "Bearer " + self._token}
-        _LOGGER.warning("Debug Info: setting Authorization header with token.")
 
         # Fetch the Enphase Token status from the local Envoy
         token_validation_html = await self._async_fetch_with_retry(
@@ -422,7 +421,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if response.status_code == 401:
             if self.endpoint_type in [ENVOY_MODEL_C, ENVOY_MODEL_LEGACY]:
                 self.get_inverters = False
-                _LOGGER.warning("Getdata Error 401 for getting invertors, disabling inverters collection")
+                _LOGGER.warning("Getdata Error 401 for getting invertors, disabling inverters")
             response.raise_for_status()
         self.endpoint_production_inverters = response
         return
@@ -464,6 +463,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             )
             if not self.isMeteringEnabled:
                 await self._update_from_p_endpoint()
+            _LOGGER.debug("Info: Envoy identified as %s metering: ",self.endpoint_type,self.isMeteringEnabled)
             self.endpoint_type = ENVOY_MODEL_S
             return
 
@@ -476,7 +476,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             and self.endpoint_production_v1_results.status_code == 200
         ):
             self.endpoint_type = ENVOY_MODEL_C  # Envoy-C, production only
-            _LOGGER.warning("Debug Info: Envoy identified as %s",self.endpoint_type)
+            _LOGGER.debug("Info: Envoy identified as %s reporting invertors: ",self.endpoint_type, self.get_inverters)
             return
 
         try:
@@ -489,7 +489,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         ):
             self.endpoint_type = ENVOY_MODEL_LEGACY  # older Envoy-C
             self.get_inverters = False # don't get inverters for this model
-            _LOGGER.warning("Debug Info: Envoy identified as %s",self.endpoint_type)
+            _LOGGER.debug("Info: Envoy identified as %s",self.endpoint_type)
             return
 
         raise RuntimeError(
@@ -876,9 +876,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def grid_status(self):
         """Return grid status reported by Envoy"""
         if self.has_grid_status and self.endpoint_home_json_results is not None:
-            home_json = self.endpoint_home_json_results.json()
-            if ("enpower" in home_json.keys() and "grid_status" in home_json["enpower"].keys()):
-                return home_json["enpower"]["grid_status"]
+            _LOGGER.debug("Home Status: %s",self.endpoint_home_json_results.status_code)
+            if self.endpoint_production_json_results.status_code == 200:
+                home_json = self.endpoint_home_json_results.json()
+                if ("enpower" in home_json.keys() and "grid_status" in home_json["enpower"].keys()):
+                    return home_json["enpower"]["grid_status"]
         self.has_grid_status = False
         return None
 
