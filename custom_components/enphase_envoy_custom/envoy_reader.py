@@ -414,11 +414,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         inverters_url = ENDPOINT_URL_PRODUCTION_INVERTERS.format(
             self.https_flag, self.host
         )
-        inverters_auth = httpx.DigestAuth(self.username, self.password)
-
-        response = await self._async_fetch_with_retry(
-            inverters_url, auth=inverters_auth
-        )
+        if self.use_enlighten_owner_token:
+            response = await self._async_fetch_with_retry(inverters_url)
+        else:
+            # Inverter page on envoy with old firmware requires username/password
+            inverters_auth = httpx.DigestAuth(self.username, self.password)
+            response = await self._async_fetch_with_retry(
+                inverters_url, auth=inverters_auth
+            )
         if response.status_code == 401:
             if self.endpoint_type in [ENVOY_MODEL_C, ENVOY_MODEL_LEGACY]:
                 self.get_inverters = False
