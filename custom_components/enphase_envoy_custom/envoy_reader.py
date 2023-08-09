@@ -184,12 +184,15 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def _async_fetch_with_retry(self, url, **kwargs):
         """Retry 3 times to fetch the url if there is a transport error."""
         for attempt in range(3):
+            header = " <Blank Authorization Header> "
+            if self._authorization_header:
+                header = " <Authorization header with Token hidden> "
             _LOGGER.debug(
                 "HTTP GET Attempt #%s: %s: use owner token: %s: Header:%s",
                 attempt + 1,
                 url,
                 self.use_enlighten_owner_token,
-                self._authorization_header,
+                header,
             )
             try:
                 async with self.async_client as client:
@@ -382,13 +385,19 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         # Check if the Secure flag is set
         if self.https_flag == "s":
-            _LOGGER.debug("Checking Token value: %s", self._token)
+            _LOGGER.debug(
+                "Checking Token value: %s (Only first 10 characters shown)",
+                self._token[1:10],
+            )
             # Check if a token has already been retrieved
             if self._token == "":
                 _LOGGER.debug("Found empty token: %s", self._token)
                 await self._getEnphaseToken()
             else:
-                _LOGGER.debug("Token is populated: %s", self._token)
+                _LOGGER.debug(
+                    "Token is populated: %s (Only first 10 characters shown)",
+                    self._token[1:10],
+                )
                 if self._is_enphase_token_expired(self._token):
                     _LOGGER.debug("Found Expired token - Retrieving new token")
                     await self._getEnphaseToken()
