@@ -1,4 +1,4 @@
-[![HACS Custom][hacs-shield]][hacs-url]
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration#readme)
 
 This is a HACS custom integration for [enphase envoys/IQ Gateways](https://enphase.com/en-us/products-and-services/envoy-and-combiner) with firmware version 7.X. This integration is based off work done by @jesserizzo, @gtdiehl and @DanBeard, with some changes to report individual battery status. 
 
