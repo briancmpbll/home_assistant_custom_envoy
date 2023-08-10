@@ -100,6 +100,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     ] = await envoy_reader.lifetime_consumption_phase(description.key)
                     
             data["grid_status"] = await envoy_reader.grid_status()
+            data["envoy_info"] = await envoy_reader.envoy_info()
 
             _LOGGER.debug("Retrieved data from API: %s", data)
 

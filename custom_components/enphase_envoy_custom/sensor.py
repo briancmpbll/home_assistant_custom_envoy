@@ -189,11 +189,21 @@ class EnvoyEntity(SensorEntity):
         """Return the device_info of the device."""
         if not self._device_serial_number:
             return None
+
+        sw_version = None
+        hw_version = None
+
+        if self.coordinator.data.get("envoy_info"):
+            sw_version = self.coordinator.data.get("envoy_info").get("software", None)
+            hw_version = self.coordinator.data.get("envoy_info").get("pn", None)
+
         return DeviceInfo(
             identifiers={(DOMAIN, str(self._device_serial_number))},
             manufacturer="Enphase",
             model="Envoy",
             name=self._device_name,
+            sw_version=sw_version,
+            hw_version=hw_version,
         )
 
 class CoordinatedEnvoyEntity(EnvoyEntity, CoordinatorEntity):

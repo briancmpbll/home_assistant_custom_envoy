@@ -12,6 +12,7 @@ import httpx
 from bs4 import BeautifulSoup
 from envoy_utils.envoy_utils import EnvoyUtils
 from homeassistant.util.network import is_ipv6_address
+import xmltodict
 
 #
 # Legacy parser is only used on ancient firmwares
@@ -33,6 +34,7 @@ ENDPOINT_URL_PRODUCTION = "http{}://{}/production"
 ENDPOINT_URL_CHECK_JWT = "https://{}/auth/check_jwt"
 ENDPOINT_URL_ENSEMBLE_INVENTORY = "http{}://{}/ivp/ensemble/inventory"
 ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
+ENDPOINT_URL_INFO_XML = "http{}://{}/info"
 
 # pylint: disable=pointless-string-statement
 
@@ -97,7 +99,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         enlighten_serial_num=None,
         https_flag="",
         use_enlighten_owner_token=False,
-        token_refresh_buffer_seconds=0
+        token_refresh_buffer_seconds=0,
+        info_refresh_buffer_seconds=3600,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower()
@@ -129,6 +132,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._token = ""
         self.use_enlighten_owner_token = use_enlighten_owner_token
         self.token_refresh_buffer_seconds = token_refresh_buffer_seconds
+        self.endpoint_info_results = None
+        self.info_refresh_buffer_seconds = info_refresh_buffer_seconds
+        self.info_next_refresh_time = datetime.datetime.now()
 
     @property
     def async_client(self):
@@ -147,6 +153,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             await self._update_from_p_endpoint()
         if self.endpoint_type == ENVOY_MODEL_LEGACY:
             await self._update_from_p0_endpoint()
+            
+        await self._update_info_endpoint()
 
     async def _update_from_pc_endpoint(self):
         """Update from PC endpoint."""
@@ -172,6 +180,25 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         await self._update_endpoint(
             "endpoint_production_results", ENDPOINT_URL_PRODUCTION
         )
+
+    async def _update_info_endpoint(self):
+        """Update from info endpoint if next time expried."""
+        if self.info_next_refresh_time <= datetime.datetime.now():
+            await self._update_endpoint("endpoint_info_results", ENDPOINT_URL_INFO_XML)
+            self.info_next_refresh_time = datetime.datetime.now() + datetime.timedelta(
+                seconds=self.info_refresh_buffer_seconds
+            )
+            _LOGGER.debug(
+                "Info endpoint updated, set next update time: %s using interval: %s",
+                self.info_next_refresh_time,
+                self.info_refresh_buffer_seconds,
+            )
+        else:
+            _LOGGER.debug(
+                "Info endpoint next update time is: %s using interval: %s",
+                self.info_next_refresh_time,
+                self.info_refresh_buffer_seconds,
+            )
 
     async def _update_endpoint(self, attr, url):
         """Update a property from an endpoint."""
@@ -451,6 +478,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 + "Appears your Envoy is running firmware that requires secure communcation. "
                 + "Please enter in the needed Enlighten credentials during setup."
             )
+
+        await self._update_info_endpoint()
 
         if (
             self.endpoint_production_json_results
@@ -881,6 +910,29 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 return home_json["enpower"]["grid_status"]
         self.has_grid_status = False
         return None
+
+    async def envoy_info(self):
+        """Return information reported by Envoy info.xml."""
+        device_data = {}
+
+        if self.endpoint_info_results:
+            try:
+                data = xmltodict.parse(self.endpoint_info_results.text)
+                device_data["software"] = data["envoy_info"]["device"]["software"]
+                device_data["pn"] = data["envoy_info"]["device"]["pn"]
+                device_data["metered"] = data["envoy_info"]["device"]["imeter"]
+            except Exception:  # pylint: disable=broad-except
+                pass
+        # add internal key information for envoy class
+        device_data["Using-model"] = self.endpoint_type
+        device_data["Using-httpsflag"] = self.https_flag
+        device_data["Using-MeteringEnabled"] = self.isMeteringEnabled
+        device_data["Using-GetInverters"] = self.get_inverters
+        device_data["Using-UseEnligthen"] = self.use_enlighten_owner_token
+        device_data["Using-InfoUpdateInterval"] = self.info_refresh_buffer_seconds
+        device_data["Using-hasgridstatus"] = self.has_grid_status
+
+        return device_data
 
     def run_in_console(self):
         """If running this module directly, print all the values in the console."""
