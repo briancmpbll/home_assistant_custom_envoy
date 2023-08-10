@@ -1,7 +1,7 @@
 {
   "domain": "enphase_envoy",
   "name": "Enphase Envoy (DEV)",
-  "documentation": "https://www.home-assistant.io/integrations/enphase_envoy",
+  "documentation": "https://github.com/briancmpbll/home_assistant_custom_envoy#readme",
   "requirements": ["envoy-utils"],
   "codeowners": ["@briancmpbll"],
   "config_flow": true,
