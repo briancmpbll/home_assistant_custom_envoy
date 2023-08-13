@@ -240,8 +240,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.use_enlighten_owner_token,
                 header,
             )
-            async with self.async_client as client:
-                try:
+            try:
+                async with self.async_client as client:
                     resp = await client.get(
                         url, headers=self._authorization_header, timeout=30, **kwargs
                     )
@@ -270,15 +270,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     if resp.status_code == 404:
                         return None
                     return resp
-                
-                except Exception as err:
-                    if attempt == 2:
-                        _LOGGER.warning("Error in fetch_with_retry, raising: %s",err)
-                        raise
-                    # close connection on error and retry
-                    _LOGGER.warning("Error in fetch_with_retry, try closing connection: %s",err)
-                    await client.aclose()
-
+            except httpx.TransportError:
+                if attempt == 2:
+                    raise
 
     async def _async_post(self, url, data=None, cookies=None, **kwargs):
         _LOGGER.debug("HTTP POST Attempt: %s", url)
