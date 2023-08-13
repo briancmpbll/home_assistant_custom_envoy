@@ -435,8 +435,8 @@ class BatteryEnergyChangeEntity(EnvoyEntity):
                 self._state = 0
 
             else:
-                old_state_value = int(float(old_state.state))
-                new_state_value = int(float(new_state.state))
+                old_state_value = int(old_state.state)
+                new_state_value = int(new_state.state)
 
                 if (self._positive):
                     if (new_state_value > old_state_value):
