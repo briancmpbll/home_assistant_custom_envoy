@@ -34,6 +34,7 @@ ENDPOINT_URL_CHECK_JWT = "https://{}/auth/check_jwt"
 ENDPOINT_URL_ENSEMBLE_INVENTORY = "http{}://{}/ivp/ensemble/inventory"
 ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
 ENDPOINT_URL_INFO_XML = "http{}://{}/info"
+ENDPOINT_URL_METERS = "http{}://{}/ivp/meters/readings"
 
 # pylint: disable=pointless-string-statement
 
@@ -119,6 +120,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_production_json_results = None
         self.endpoint_production_v1_results = None
         self.endpoint_production_inverters = None
+        self.endpoint_meters_json_results = None
         self.endpoint_production_results = None
         self.endpoint_ensemble_json_results = None
         self.endpoint_home_json_results = None
@@ -195,6 +197,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         )
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
+        )
+        await self._update_endpoint(
+            "endpoint_meters_json_results", ENDPOINT_URL_METERS
         )
         if self.has_grid_status:
             await self._update_endpoint(
@@ -902,6 +907,70 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return raw_json["storage"][0]
 
+    async def import_index(self):
+        """import index"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_meters_json_results.json()
+            index_imp = raw_json[1]["actEnergyDlvd"]
+            return int(index_imp)
+        else:
+            raise RuntimeError("No match for import index, check REGEX  " + text)
+            return None
+
+
+    async def import_index_phase(self, phase):
+        """import index"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        phase_map = {"import_index_l1": 0, "import_index_l2": 1, "import_index_l3": 2}
+
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_meters_json_results.json()
+            try:
+                return int(
+                    raw_json[1]["channels"][phase_map[phase]]["actEnergyDlvd"]
+                )
+            except (KeyError, IndexError):
+                return None
+
+        return None
+
+    async def export_index(self):
+        """import export"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_meters_json_results.json()
+            index_exp = raw_json[1]['actEnergyRcvd']
+            return int(index_exp)
+
+        else:
+            raise RuntimeError("No match for export index, check REGEX  " + text)
+            return None
+
+
+    async def export_index_phase(self, phase):
+        """import export"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        phase_map = {"export_index_l1": 0, "export_index_l2": 1, "export_index_l3": 2}
+
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_meters_json_results.json()
+            try:
+                return int(
+                    raw_json[1]["channels"][phase_map[phase]]["actEnergyRcvd"]
+                )
+            except (KeyError, IndexError):
+                return None
+
+        return None
+
+
     async def grid_status(self):
         """Return grid status reported by Envoy"""
         if self.has_grid_status and self.endpoint_home_json_results is not None:
@@ -998,6 +1067,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.seven_days_consumption(),
                 self.lifetime_production(),
                 self.lifetime_consumption(),
+                self.import_index(),
+                self.export_index(),
                 self.inverters_production(),
                 self.battery_storage(),
                 return_exceptions=False,
@@ -1012,17 +1083,19 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         print(f"seven_days_consumption:  {results[5]}")
         print(f"lifetime_production:     {results[6]}")
         print(f"lifetime_consumption:    {results[7]}")
+        print(f"index_import:            {results[8]}")
+        print(f"index_export:            {results[9]}")
         if "401" in str(data_results):
             print(
                 "inverters_production:    Unable to retrieve inverter data - Authentication failure"
             )
-        elif results[8] is None:
+        elif results[10] is None:
             print(
                 "inverters_production:    Inverter data not available for your Envoy device."
             )
         else:
-            print(f"inverters_production:    {results[8]}")
-        print(f"battery_storage:         {results[9]}")
+            print(f"inverters_production:    {results[10]}")
+        print(f"battery_storage:         {results[11]}")
 
 
 if __name__ == "__main__":
