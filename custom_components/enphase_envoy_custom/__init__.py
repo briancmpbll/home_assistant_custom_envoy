@@ -14,10 +14,13 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNA
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.storage import Store
 
 from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIGHTEN, CONF_SERIAL, PHASE_SENSORS, DEFAULT_SCAN_INTERVAL
 
 SCAN_INTERVAL = timedelta(seconds=60)
+STORAGE_KEY = "envoy"
+STORAGE_VERSION = 1
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,6 +32,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     options = entry.options
     name = config[CONF_NAME]
 
+    # Setup persistent storage, to save tokens between home assistant restarts
+    store = Store(hass, STORAGE_VERSION, ".".join([STORAGE_KEY, entry.entry_id]))
+
     envoy_reader = EnvoyReader(
         config[CONF_HOST],
         username=config[CONF_USERNAME],
@@ -39,8 +45,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 #        async_client=get_async_client(hass),
         use_enlighten_owner_token=config.get(CONF_USE_ENLIGHTEN, False),
         enlighten_serial_num=config[CONF_SERIAL],
-        https_flag='s' if config.get(CONF_USE_ENLIGHTEN, False) else ''
+        https_flag='s' if config.get(CONF_USE_ENLIGHTEN, False) else '',
+        store=store,
     )
+    await envoy_reader._sync_store()
 
     async def async_update_data():
         """Fetch data from API endpoint."""
@@ -103,6 +111,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             _LOGGER.debug("Retrieved data from API: %s", data)
 
+            await envoy_reader._sync_store()
+            
             return data
 
     coordinator = DataUpdateCoordinator(
