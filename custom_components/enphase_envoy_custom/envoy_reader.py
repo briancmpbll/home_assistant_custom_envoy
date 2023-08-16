@@ -928,7 +928,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         except (KeyError, IndexError):
             return None
 
-    return None
+        return None
 
     async def grid_status(self):
         """Return grid status reported by Envoy"""
