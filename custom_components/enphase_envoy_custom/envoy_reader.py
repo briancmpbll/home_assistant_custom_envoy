@@ -76,6 +76,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     message_battery_not_available = (
         "Battery storage data not available for your Envoy device."
     )
+    
+    message_import_export_not_available = (
+        "Import Export data not available for your Envoy device."
+    )
 
     message_consumption_not_available = (
         "Consumption data not available for your Envoy device."
@@ -911,30 +915,28 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """import index"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-
-        if self.endpoint_type == ENVOY_MODEL_S:
-            raw_json = self.endpoint_meters_json_results.json()
-            index_imp = raw_json[1]["actEnergyDlvd"]
-            return int(index_imp)
-        else:
-            raise RuntimeError("No match for import index, check REGEX  " + text)
-            return None
-
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        index_imp = raw_json[1]["actEnergyDlvd"]
+        return int(index_imp)
 
     async def import_index_phase(self, phase):
         """import index"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         phase_map = {"import_index_l1": 0, "import_index_l2": 1, "import_index_l3": 2}
-
-        if self.endpoint_type == ENVOY_MODEL_S:
-            raw_json = self.endpoint_meters_json_results.json()
-            try:
-                return int(
-                    raw_json[1]["channels"][phase_map[phase]]["actEnergyDlvd"]
-                )
-            except (KeyError, IndexError):
-                return None
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        try:
+            return int(
+                raw_json[1]["channels"][phase_map[phase]]["actEnergyDlvd"]
+            )
+        except (KeyError, IndexError):
+            return None
 
         return None
 
@@ -942,34 +944,32 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """import export"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-
-        if self.endpoint_type == ENVOY_MODEL_S:
-            raw_json = self.endpoint_meters_json_results.json()
-            index_exp = raw_json[1]['actEnergyRcvd']
-            return int(index_exp)
-
-        else:
-            raise RuntimeError("No match for export index, check REGEX  " + text)
-            return None
-
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        index_exp = raw_json[1]['actEnergyRcvd']
+        return int(index_exp)
 
     async def export_index_phase(self, phase):
         """import export"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         phase_map = {"export_index_l1": 0, "export_index_l2": 1, "export_index_l3": 2}
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        try:
+            return int(
+                raw_json[1]["channels"][phase_map[phase]]["actEnergyRcvd"]
+            )
+        except (KeyError, IndexError):
+            return None
 
-        if self.endpoint_type == ENVOY_MODEL_S:
-            raw_json = self.endpoint_meters_json_results.json()
-            try:
-                return int(
-                    raw_json[1]["channels"][phase_map[phase]]["actEnergyRcvd"]
-                )
-            except (KeyError, IndexError):
-                return None
-
-        return None
-
+    return None
 
     async def grid_status(self):
         """Return grid status reported by Envoy"""
