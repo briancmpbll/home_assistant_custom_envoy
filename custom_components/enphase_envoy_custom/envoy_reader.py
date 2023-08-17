@@ -884,9 +884,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         phase_map = {"import_index_l1": 0, "import_index_l2": 1, "import_index_l3": 2}
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
+        
+        raw_json = self.endpoint_meters_json_results.json()
         if raw_json[1]["channels"][1]["voltage"] < 50:
             return None
-        raw_json = self.endpoint_meters_json_results.json()
         try:
             return int(
                 raw_json[1]["channels"][phase_map[phase]]["actEnergyDlvd"]
@@ -916,10 +917,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
+        
+        raw_json = self.endpoint_meters_json_results.json()
         if raw_json[1]["channels"][1]["voltage"] < 50:
             return None
         
-        raw_json = self.endpoint_meters_json_results.json()
         try:
             return int(
                 raw_json[1]["channels"][phase_map[phase]]["actEnergyRcvd"]
