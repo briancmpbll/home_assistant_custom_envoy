@@ -76,10 +76,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     message_battery_not_available = (
         "Battery storage data not available for your Envoy device."
     )
-    
-    message_import_export_not_available = (
-        "Import Export data not available for your Envoy device."
-    )
 
     message_consumption_not_available = (
         "Consumption data not available for your Envoy device."
@@ -916,7 +912,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_import_export_not_available
+            return None
         
         raw_json = self.endpoint_meters_json_results.json()
         index_imp = raw_json[1]["actEnergyDlvd"]
@@ -928,8 +924,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
         phase_map = {"import_index_l1": 0, "import_index_l2": 1, "import_index_l3": 2}
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_import_export_not_available
-        
+            return None
+        if raw_json[1]["channels"][1]["voltage"] < 50:
+            return None
         raw_json = self.endpoint_meters_json_results.json()
         try:
             return int(
@@ -946,7 +943,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_import_export_not_available
+            return None
         
         raw_json = self.endpoint_meters_json_results.json()
         index_exp = raw_json[1]['actEnergyRcvd']
@@ -959,7 +956,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         phase_map = {"export_index_l1": 0, "export_index_l2": 1, "export_index_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_import_export_not_available
+            return None
+        if raw_json[1]["channels"][1]["voltage"] < 50:
+            return None
         
         raw_json = self.endpoint_meters_json_results.json()
         try:
