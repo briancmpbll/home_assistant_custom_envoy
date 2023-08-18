@@ -101,6 +101,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         token_refresh_buffer_seconds=0,
         store=None,
         info_refresh_buffer_seconds=3600,
+        fetch_timeout_seconds=15,
+        fetch_retries=2,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower()
@@ -137,6 +139,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._store = store
         self._store_data = {}
         self._store_update_pending = False
+        self._fetch_timeout_seconds = fetch_timeout_seconds
+        self._fetch_retries = fetch_retries
 
     @property
     def _token(self):
@@ -229,7 +233,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _async_fetch_with_retry(self, url, **kwargs):
         """Retry 3 times to fetch the url if there is a transport error."""
-        for attempt in range(3):
+        for attempt in range(self._fetch_retries):
             header = " <Blank Authorization Header> "
             if self._authorization_header:
                 header = " <Authorization header with Token hidden> "
@@ -243,9 +247,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             async with self.async_client as client:
                 try:
                     resp = await client.get(
-                        url, headers=self._authorization_header, timeout=30, **kwargs
+                        url, headers=self._authorization_header, timeout=self._fetch_timeout_seconds, **kwargs
                     )
-                    if resp.status_code == 401 and attempt < 2:
+                    if resp.status_code == 401 and attempt < (self._fetch_retries-1):
                         if self.use_enlighten_owner_token:
                             _LOGGER.debug(
                                 "Received 401 from Envoy; refreshing cookies, attempt %s of 2:",
@@ -272,7 +276,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     return resp
                 
                 except Exception as err:
-                    if attempt == 2:
+                    if attempt == (self._fetch_retries-1):
                         _LOGGER.warning("Error in fetch_with_retry, raising: %s",err)
                         raise
                     # close connection on error and retry
