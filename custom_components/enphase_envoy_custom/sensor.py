@@ -193,9 +193,10 @@ class EnvoyEntity(SensorEntity):
         sw_version = None
         hw_version = None
 
-        if self.coordinator.data.get("envoy_info"):
-            sw_version = self.coordinator.data.get("envoy_info").get("software", None)
-            hw_version = self.coordinator.data.get("envoy_info").get("pn", None)
+        if hasattr(self, 'coordinator'):
+            if self.coordinator.data.get("envoy_info"):
+                sw_version = self.coordinator.data.get("envoy_info").get("software", None)
+                hw_version = self.coordinator.data.get("envoy_info").get("pn", None)
 
         return DeviceInfo(
             identifiers={(DOMAIN, str(self._device_serial_number))},
