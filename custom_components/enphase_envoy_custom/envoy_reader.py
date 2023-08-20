@@ -102,7 +102,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         store=None,
         info_refresh_buffer_seconds=3600,
         fetch_timeout_seconds=15,
-        fetch_retries=2,
+        fetch_holdoff_seconds=30,
+        fetch_retries=1,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower()
@@ -140,7 +141,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._store_data = {}
         self._store_update_pending = False
         self._fetch_timeout_seconds = fetch_timeout_seconds
-        self._fetch_retries = fetch_retries
+        self._fetch_holdoff_seconds = fetch_holdoff_seconds
+        self._fetch_retries = max(fetch_retries,1)
 
     @property
     def _token(self):
@@ -233,7 +235,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _async_fetch_with_retry(self, url, **kwargs):
         """Retry 3 times to fetch the url if there is a transport error."""
-        for attempt in range(self._fetch_retries):
+        for attempt in range(self._fetch_retries + 1):
             header = " <Blank Authorization Header> "
             if self._authorization_header:
                 header = " <Authorization header with Token hidden> "
@@ -249,39 +251,55 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     resp = await client.get(
                         url, headers=self._authorization_header, timeout=self._fetch_timeout_seconds, **kwargs
                     )
-                    if resp.status_code == 401 and attempt < (self._fetch_retries-1):
+                    if resp.status_code == 401 and attempt < self._fetch_retries:
                         if self.use_enlighten_owner_token:
                             _LOGGER.debug(
-                                "Received 401 from Envoy; refreshing cookies, attempt %s of 2:",
-                                attempt+1
+                                "Received 401 from Envoy; refreshing cookies, attempt %s of %s:",
+                                attempt+1,
+                                self._fetch_retries + 1
                              )
                             could_refresh_cookies = await self._refresh_token_cookies()
                             if not could_refresh_cookies:
                                 _LOGGER.debug(
-                                    "cookie refresh failed, getting token, attempt %s of 2:",
-                                    attempt+1
+                                    "cookie refresh failed, getting token, attempt %s of %s:",
+                                    attempt+1,
+                                    self._fetch_retries + 1
                                 )
                                 await self._getEnphaseToken()
                             continue
                         # don't try token and cookies refresh for legacy envoy
                         else:
                             _LOGGER.debug(
-                                "Received 401 from Envoy; retrying, attempt %s of 2",
-                                attempt+1
+                                "Received 401 from Envoy; retrying, attempt %s of %s",
+                                attempt+1,
+                                self._fetch_retries + 1
                             )
                             continue
-                    _LOGGER.debug("Fetched (%s) from %s: %s: %s",  attempt + 1, url, resp, resp.text)
+                    _LOGGER.debug("Fetched (%s of %s) from %s: %s: %s",
+                        attempt + 1,
+                        self._fetch_retries + 1,
+                        url, 
+                        resp, 
+                        resp.text
+                    )
                     if resp.status_code == 404:
                         return None
                     return resp
                 
-                except Exception as err:
-                    if attempt == (self._fetch_retries-1):
-                        _LOGGER.warning("Error in fetch_with_retry, raising: %s",err)
+                except httpx.TimeoutException as exc:
+                    if attempt == self._fetch_retries:
+                        _LOGGER.warning("HTTP Timeout in fetch_with_retry, raising: %s",exc)
                         raise
-                    # close connection on error and retry
-                    _LOGGER.warning("Error in fetch_with_retry, try closing connection: %s",err)
-                    await client.aclose()
+                    # Sleep a bit and try once more
+                    _LOGGER.warning("HTTP Timeout in fetch_with_retry, waiting a bit: %s",exc)
+                    await asyncio.sleep(self._fetch_holdoff_seconds)
+                except Exception as exc:
+                    if attempt == self._fetch_retries:
+                        _LOGGER.warning("Error in fetch_with_retry, raising: %s",exc)
+                        raise
+                    # Sleep a bit and try once more
+                    _LOGGER.warning("Error in fetch_with_retry, waiting a bit: %s",exc)
+                    await asyncio.sleep(self._fetch_holdoff_seconds)
 
 
     async def _async_post(self, url, data=None, cookies=None, **kwargs):
@@ -900,6 +918,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         device_data["Using-UseEnligthen"] = self.use_enlighten_owner_token
         device_data["Using-InfoUpdateInterval"] = self.info_refresh_buffer_seconds
         device_data["Using-hasgridstatus"] = self.has_grid_status
+        device_data["Using-FetchRetryCount"] = self._fetch_retries
+        device_data["Using-FetchTimeOut"] = self._fetch_timeout_seconds
+        device_data["Using-FetchHoldoff"] = self._fetch_holdoff_seconds
 
         return device_data
 

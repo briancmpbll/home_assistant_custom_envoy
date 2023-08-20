@@ -28,10 +28,15 @@
       "user": {
         "title": "Envoy options",
         "data": {
-          "data_interval": "Time between entity updates [s]"
+          "data_interval": "Time between entity updates [s].",
+          "data_fetch_timeout_seconds": "Timeout for getting single Envoy data page [s], minimum 5.",
+          "data_fetch_retry_count": "How many retries in getting single Envoy data page. minium 1.",
+          "data_fetch_holdoff_seconds": "Time between 2 retries to get single Envoy data page[s], minimum 0.",
+          "data_collection_timeout_seconds": "Overall Timeout on getting all Envoy data pages[s], minimum 30."
         },
         "data_description": {
-          "data_interval": "Time between data updates, minimum 5 sec. After changes reload the envoy"
+          "data_interval": "Time between data updates, minimum 5 sec. After any change here or below reload the envoy.",
+          "data_collection_timeout_seconds": "If overall data collection takes more then this time it will be cancelled. Account for retries."
         }
       }
     }

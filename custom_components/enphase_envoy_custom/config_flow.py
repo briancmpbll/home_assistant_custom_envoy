@@ -231,6 +231,30 @@ class EnvoyOptionsFlowHandler(config_entries.OptionsFlow):
                     "data_interval", DEFAULT_SCAN_INTERVAL
                 ),
             ): vol.All(vol.Coerce(int), vol.Range(min=5)),
+            vol.Optional(
+                "data_fetch_timeout_seconds",
+                default=self.config_entry.options.get(
+                    "data_fetch_timeout_seconds", 10
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=5)),
+            vol.Optional(
+                "data_fetch_retry_count",
+                default=self.config_entry.options.get(
+                    "data_fetch_retry_count", 1
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=1)),
+            vol.Optional(
+                "data_fetch_holdoff_seconds",
+                default=self.config_entry.options.get(
+                    "data_fetch_holdoff_seconds", 30
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=0)),
+            vol.Optional(
+                "data_collection_timeout_seconds",
+                default=self.config_entry.options.get(
+                    "data_collection_timeout_seconds", 55
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=30)),
         }
         return self.async_show_form(step_id="user", data_schema=vol.Schema(schema))
 
