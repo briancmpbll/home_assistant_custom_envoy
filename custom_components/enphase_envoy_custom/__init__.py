@@ -21,6 +21,10 @@ from .const import COORDINATOR, DOMAIN, NAME, PLATFORMS, SENSORS, CONF_USE_ENLIG
 SCAN_INTERVAL = timedelta(seconds=60)
 STORAGE_KEY = "envoy"
 STORAGE_VERSION = 1
+FETCH_RETRIES = 1
+FETCH_TIMEOUT_SECONDS = 30
+FETCH_HOLDOFF_SECONDS = 0
+COLLECTION_TIMEOUT_SECONDS = 55
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,13 +51,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         enlighten_serial_num=config[CONF_SERIAL],
         https_flag='s' if config.get(CONF_USE_ENLIGHTEN, False) else '',
         store=store,
+        fetch_retries=options.get("data_fetch_retry_count", FETCH_RETRIES),
+        fetch_timeout_seconds=options.get("data_fetch_timeout_seconds", FETCH_TIMEOUT_SECONDS),
+        fetch_holdoff_seconds=options.get("data_fetch_holdoff_seconds", FETCH_HOLDOFF_SECONDS),
     )
     await envoy_reader._sync_store()
 
     async def async_update_data():
         """Fetch data from API endpoint."""
         data = {}
-        async with async_timeout.timeout(30):
+        async with async_timeout.timeout(options.get("data_collection_timeout_seconds", COLLECTION_TIMEOUT_SECONDS)):
             try:
                 await envoy_reader.getData()
             except httpx.HTTPStatusError as err:

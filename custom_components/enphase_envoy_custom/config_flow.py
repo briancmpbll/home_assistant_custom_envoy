@@ -37,15 +37,21 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> EnvoyRead
 #        async_client=get_async_client(hass),
         use_enlighten_owner_token=data.get(CONF_USE_ENLIGHTEN, False),
         enlighten_serial_num=data[CONF_SERIAL],
-        https_flag='s' if data.get(CONF_USE_ENLIGHTEN,False) else ''
+        https_flag='s' if data.get(CONF_USE_ENLIGHTEN,False) else '',
+        fetch_timeout_seconds=60
     )
 
     try:
         await envoy_reader.getData()
     except httpx.HTTPStatusError as err:
+        _LOGGER.warning("Validate input, getdata returned HTTPStatusError: %s",err)
         raise InvalidAuth from err
-    except (RuntimeError, httpx.HTTPError) as err:
+    except (httpx.HTTPError) as err:
+        _LOGGER.warning("Validate input, getdata returned HTTPError: %s",err)
         raise CannotConnect from err
+    except (RuntimeError) as err:
+        _LOGGER.warning("Validate input, getdata returned RuntimeError: %s",err)
+        raise
 
     return envoy_reader
 
@@ -79,7 +85,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             schema[vol.Required(CONF_HOST)] = str
 
-        schema[vol.Optional(CONF_USERNAME, default=self.username or "envoy")] = str
+        schema[vol.Optional(CONF_USERNAME, default=self.username)] = str
         schema[vol.Optional(CONF_PASSWORD, default="")] = str
         schema[vol.Optional(CONF_SERIAL, default=self.unique_id)] = str
         schema[vol.Optional(CONF_USE_ENLIGHTEN)] = bool
@@ -163,12 +169,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason="already_configured")
             try:
                 envoy_reader = await validate_input(self.hass, user_input)
-            except CannotConnect:
+            except RuntimeError as rerr:
+                errors["base"] = "invalid_auth"
+            except CannotConnect as cerr:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
+            except Exception as exc:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception in validate input %s",exc)
                 errors["base"] = "unknown"
             else:
                 data = user_input.copy()
@@ -231,6 +239,30 @@ class EnvoyOptionsFlowHandler(config_entries.OptionsFlow):
                     "data_interval", DEFAULT_SCAN_INTERVAL
                 ),
             ): vol.All(vol.Coerce(int), vol.Range(min=5)),
+            vol.Optional(
+                "data_fetch_timeout_seconds",
+                default=self.config_entry.options.get(
+                    "data_fetch_timeout_seconds", 30
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=5)),
+            vol.Optional(
+                "data_fetch_retry_count",
+                default=self.config_entry.options.get(
+                    "data_fetch_retry_count", 1
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=1)),
+            vol.Optional(
+                "data_fetch_holdoff_seconds",
+                default=self.config_entry.options.get(
+                    "data_fetch_holdoff_seconds", 0
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=0)),
+            vol.Optional(
+                "data_collection_timeout_seconds",
+                default=self.config_entry.options.get(
+                    "data_collection_timeout_seconds", 55
+                ),
+            ): vol.All(vol.Coerce(int), vol.Range(min=30)),
         }
         return self.async_show_form(step_id="user", data_schema=vol.Schema(schema))
 
