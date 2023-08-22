@@ -96,6 +96,7 @@ What data is available depends on how many current transformer clamps (CT) are i
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption over all phases.
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption for each individual phase named L1, L2 and L3.
 - Current power production for each connected inverter.
+- Energy Import and Export Index over all phases and for each phase individually from meters readings
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 
@@ -136,6 +137,10 @@ Envoy \<serialnumber\> Current Power Production L\<n\>|sensor.Envoy_\<serialnumb
 |Envoy \<serialnumber\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_todays_energy_consumption_L\<n\>|4,5|
 |Envoy \<serialnumber\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_last_seven_days_energy_production L\<n\>|4,5|
 |Envoy \<serialnumber\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_lifetime_energy_consumption_L\<n\>|4,5|
+|Index Import|sensor.Envoy_\<serialnumber\>_index_import|4,5|
+|Index Export|sensor.Envoy_\<serialnumber\>_index_export|4,5|
+|Index Import L\<n\>|sensor.Envoy_\<serialnumber\>_index_import_L\<n\>|4,5|
+|Index Export L\<n\>|sensor.Envoy_\<serialnumber\>_index_export_L\<n\>|4,5|
 
 1 always zero for Envoy Metered without meters.  
 2 reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
