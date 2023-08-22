@@ -85,6 +85,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         "Grid status not available for your Envoy device."
     )
 
+    message_import_export_not_available = (
+        "Import Export data not available for your Envoy device."
+    )
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         host,
@@ -912,7 +916,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
+            return self.message_import_export_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
         index_imp = raw_json[1]["actEnergyDlvd"]
@@ -944,7 +948,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
+            return self.message_import_export_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
         index_exp = raw_json[1]['actEnergyRcvd']
@@ -1024,6 +1028,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             device_data["Endpoint-production"] = self.endpoint_production_results.text
         else:
             device_data["Endpoint-production"] = self.endpoint_production_results
+        if self.endpoint_meters_json_results:
+            device_data["Endpoint-meters"] = self.endpoint_meters_json_results.text
+        else:
+            device_data["Endpoint-meters"] = self.endpoint_meters_json_results
         if self.endpoint_production_inverters:
             device_data[
                 "Endpoint-production_inverters"
