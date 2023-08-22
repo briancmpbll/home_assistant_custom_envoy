@@ -50,13 +50,25 @@ Enable this option with IQ Gateway/ENVOY-S Firmware 7.x or later that require En
 
 Once the Envoy has been running and is operational, the following configuration items are available:
 
-### Scan Interval
+### Scan Interval - Time between Entity updates
 
 By default the Envoy data is collected every 60 seconds. One can change the setting to what is desired with a minimum of every 5 seconds. Upon changing the value, reload the integration (or restart Home Assistant).
 
 What the optimal scan frequency is depends on the Envoy model. Models without meters typically update the inverter data every 5 minutes. Models using meters update measurements way more frequent, probably every second or so. Hence the default of 60 seconds as starting point. Some models may have capacity issues running at high refresh rates, so no single recipe is available.
 
 **Note** Envoy Metered has a data streaming option to bring in data as it comes available which is not currently supported by this integration.
+
+### Timeout for single Envoy Page
+Specifies the timeout for each single data get to the Envoy. Defaults to 30 seconds. Shortening this time does not make the Envoy response faster, lengthening it will allow a slow Envoy more time to respond before time-out occurs.
+
+### How many retries in getting an Envoy response
+Specifies how many times a retry should be attempted after the first one failed. Must be at least 1 to allow for automatic token updates. Typically do not change this setting. Increasing may help in  poor network conditions.
+
+### Time between 2 retries
+Optionally a wait time can be inserted between 2 retries. Only change this in special circumstances.
+
+### Overall Timeout
+When getting data from the Envoy, an overall timer is started. If not all data is returned when the timer expires, the data collection is considered timed-out and all data is set to unavailable. Intent is catch all if data collection is never returning. Do not change this setting, unless Timeout for single envoy page or number of retries needs to be increased. In that case increase this overall timer value as well to prevent it to timeout the data collection. To get a feel for needed time, enable the debug mode on the envoy and inspect timing of a full collection cycle.
 
 # Firmware and it's impact
 
@@ -184,3 +196,8 @@ When issues occur with this integration some items to check are:
 - When configuring the Envoy for token use it will reach out to the Enphase Enlighten website to obtain a token. Reportedly the Enphase website is not equally responsive every moment of the day, week, moth, year and the setup will fail. At this moment the only answer to that is your perseverance or just try at another moment.
 - The token lifetime for Home Owner accounts is currently 1 year. The token is cached, eliminating the need to connect to Enphase each reload or restart. When the token is expired or some other authorization hiccup occurs a new token will be obtained. If that is needed at a moment it can't connect to Enphase it will try until success but in the mean time no data is collected from the Envoy. When using an Installer or DIY account this may work as well but the lifetime is 12 hours and refresh is way more frequent.
 - The Envoy integration supports zeroconf for auto detection and changes of IP addresses for the Envoy. It will not switch to an IPV6 address if the default network interface is running ipv4 or the other way around.It supports both IPV4 and IPV6. To change between these when default interface change IP type, remove and re-add the Envoy.
+- When an error is reported during the initial configuration, inspect the home-assistant.log file in the /config folder. It will reveal what happened:
+  - Validate input, getdata returned RuntimeError: Could not Authenticate with Enlighten, status: 401, <Response [401 Unauthorized]> : Check if Enphase username and/or password are correct
+  - Validate input, getdata returned RuntimeError: Could not get enlighten token, status: 403, <Response [403 Forbidden]>  : Make sure envoy serialnumber is correct and connected to your Enphase account
+  - Validate input, getdata returned HTTPError: All connection attempts failed  : failure to connect to envoy.  : Validate if correct IP address of the Envoy is used
+  - Fetched (1 of 2) in 0.0 sec from http://x.x.x.x/production.json?details=1: <Response [301 Moved Permanently]>: <html>  : Was 'use Enlighten' checked when using tokens or validate username/pw used for legacy devices.
