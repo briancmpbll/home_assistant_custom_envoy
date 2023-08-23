@@ -117,39 +117,40 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 
 ## Envoy Sensors
 
-|Sensor name|Sensor ID|remarks|
-|-----|-----|----|
-|Envoy \<serialnumber\> Current Power Production|sensor.Envoy_\<serialnumber\>_current_power_production||
-|Envoy \<serialnumber\> Today's Energy production|sensor.Envoy_\<serialnumber\>_todays_energy_production|1|
-|Envoy \<serialnumber\> Last Seven Days Energy Production|sensor.Envoy_\<serialnumber\>_last_seven_days_energy_production|1|
-|Envoy \<serialnumber\> Lifetime Energy Production|sensor.Envoy_\<serialnumber\>_lifetime_energy_production|2|
-|Envoy \<serialnumber\> Current Power Consumption|sensor.Envoy_\<serialnumber\>_current_power_consumption||
-|Envoy \<serialnumber\> Today's Energy Consumption|sensor.Envoy_\<serialnumber\>_todays_energy_consumption|4,5|
-|Envoy \<serialnumber\> Last Seven Days Energy Consumption|sensor.Envoy_\<serialnumber\>_last_seven_days_energy_consumption|4,5|
-|Envoy \<serialnumber\> Lifetime Energy Consumption|sensor.Envoy_\<serialnumber\>_lifetime_energy_consumption|4,5|
-|Grid Status |binary_sensor.grid_status|3|
-Envoy \<serialnumber\> Current Power Production L\<n\>|sensor.Envoy_\<serialnumber\>_current_power_production_L\<n\>|4,5|
-|Envoy \<serialnumber\> Today's Energy production L\<n\>|sensor.Envoy_\<serialnumber\>_todays_energy_production_L\<n\>|4,5|
-|Envoy \<serialnumber\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<serialnumber\>_last_seven_days_energy_production L\<n\>|4,5|
-|Envoy \<serialnumber\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<serialnumber\>_lifetime_energy_consumption_L\<n\>|4,5|
-|Envoy \<serialnumber\> Current Power Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_current_power_consumption_L\<n\>|4,5|
-|Envoy \<serialnumber\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_todays_energy_consumption_L\<n\>|4,5|
-|Envoy \<serialnumber\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_last_seven_days_energy_production L\<n\>|4,5|
-|Envoy \<serialnumber\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<serialnumber\>_lifetime_energy_consumption_L\<n\>|4,5|
+|Sensor name|Sensor ID|Units|remarks|
+|-----|-----|----|----|
+|Envoy \<sn\> Current Power Production|sensor.Envoy_\<sn\>_current_power_production|W||
+|Envoy \<sn\> Today's Energy production|sensor.Envoy_\<sn\>_todays_energy_production|Wh|1|
+|Envoy \<sn\> Last Seven Days Energy Production|sensor.Envoy_\<sn\>_last_seven_days_energy_production|Wh|1|
+|Envoy \<sn\> Lifetime Energy Production|sensor.Envoy_\<sn\>_lifetime_energy_production|Wh|2|
+|Envoy \<sn\> Current Power Consumption|sensor.Envoy_\<sn\>_current_power_consumption|W||
+|Envoy \<sn\> Today's Energy Consumption|sensor.Envoy_\<sn\>_todays_energy_consumption|Wh|4,5|
+|Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4,5|
+|Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4,5|
+|Grid Status |binary_sensor.grid_status|On/Off|3|
+Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_L\<n\>|W|4,5|
+|Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_L\<n\>|Wh|4,5|
+|Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production L\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5|
+|Envoy \<sn\> Current Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_power_consumption_L\<n\>|W|4,5|
+|Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
+|Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
+|Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
 
-1 always zero for Envoy Metered without meters.  
-2 reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
+1 Always zero for Envoy Metered without meters.  
+2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
 3 Not available on Legacy models and ENVOY Standard with recent firmware.  
 4 Only on Envoy metered with configured and connected meters.  
 5 L\<n\> L1,L2,L3, availability depends on which and how many meters are connected and configured.  
+6 Reportedly always zero on Envoy metered with Firmware D8.
 
 ## Inverter Sensors
 
 For each inverter a sensor for current power production is created.
 
-|Sensor name|Sensor ID|remarks|
-|-----|-----|----|
-|Envoy \<serialnumber\> Inverter \<serialnumber\>|sensor.Envoy_\<serialnumber\>\_Inverter_\<serialnumber\>|1|
+|Sensor name|Sensor ID|UNits|remarks|
+|-----|-----|----|----|
+|Envoy \<sn\> Inverter \<sn\>|sensor.Envoy_\<sn\>\_Inverter_\<sn\>|W|1|
 
 1: Not available on Legacy models
 
@@ -161,13 +162,13 @@ For each inverter a sensor for current power production is created.
 
 For each battery a sensor for percent full is created as well as sensors for overall battery percentage, overall battery capacity, overall energy charged and discharged are created.
 
-|Sensor name|Sensor ID|remarks|
-|-----|-----|----|
-|Envoy \<serialnumber\> Battery \<serialnumber\>|sensor.Envoy_\<serialnumber\>\_Battery_\<serialnumber\>|Unit: %  1|
-|Envoy \<serialnumber\> Total Battery Percentage|sensor.Envoy_\<serialnumber\>\_total_battery_percentage|1|
-|Envoy \<serialnumber\> Current Battery Capacity|sensor.Envoy_\<serialnumber\>\_current_battery_capacity|Wh   1|
-|Envoy \<serialnumber\> Battery Energy Charged|sensor.Envoy_\<serialnumber\>\_battery_energy_charged|1|
-|Envoy \<serialnumber\> Battery Energy Discharged|sensor.Envoy_\<serialnumber\>\_battery_energy_charged|1|
+|Sensor name|Sensor ID|Units|remarks|
+|-----|-----|----|----|
+|Envoy \<sn\> Battery \<sn\>|sensor.Envoy_\<sn\>\_Battery_\<sn\>|%|1|
+|Envoy \<sn\> Total Battery Percentage|sensor.Envoy_\<sn\>\_total_battery_percentage|%|1|
+|Envoy \<sn\> Current Battery Capacity|sensor.Envoy_\<sn\>\_current_battery_capacity|Wh|1|
+|Envoy \<sn\> Battery Energy Charged|sensor.Envoy_\<sn\>\_battery_energy_charged|Wh|1|
+|Envoy \<sn\> Battery Energy Discharged|sensor.Envoy_\<sn\>\_battery_energy_charged|Wh|1|
 
 1: Not available on Legacy models and ENVOYS-S Standard
 
