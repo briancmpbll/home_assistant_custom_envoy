@@ -12,7 +12,6 @@ import httpx
 import xmltodict
 from envoy_utils.envoy_utils import EnvoyUtils
 from homeassistant.util.network import is_ipv6_address
-import xmltodict
 
 #
 # Legacy parser is only used on ancient firmwares
@@ -103,6 +102,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         token_refresh_buffer_seconds=0,
         store=None,
         info_refresh_buffer_seconds=3600,
+        fetch_timeout_seconds=30,
+        fetch_holdoff_seconds=0,
+        fetch_retries=1,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower()
@@ -140,6 +142,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._store = store
         self._store_data = {}
         self._store_update_pending = False
+        self._fetch_timeout_seconds = fetch_timeout_seconds
+        self._fetch_holdoff_seconds = fetch_holdoff_seconds
+        self._fetch_retries = max(fetch_retries,1)
 
     @property
     def _token(self):
@@ -162,6 +167,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     def async_client(self):
         """Return the httpx client."""
         return self._async_client or httpx.AsyncClient(verify=False,
+                                                       headers=self._authorization_header,
+                                                       cookies=self._cookies)
+
+    @property
+    def non_local_async_client(self):
+        """Return the httpx client for non-local usage."""
+        return self._async_client or httpx.AsyncClient(verify=True,
                                                        headers=self._authorization_header,
                                                        cookies=self._cookies)
 
@@ -235,56 +247,85 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _async_fetch_with_retry(self, url, **kwargs):
         """Retry 3 times to fetch the url if there is a transport error."""
-        for attempt in range(3):
-            header = " <Blank Authorization Header> "
+        for attempt in range(self._fetch_retries + 1):
+            header = " <Blank Header> "
             if self._authorization_header:
-                header = " <Authorization header with Token hidden> "
+                header = " <Token hidden> "
             _LOGGER.debug(
-                "HTTP GET Attempt #%s: %s: use owner token: %s: Header:%s",
+                "HTTP GET Attempt #%s of %s: %s: use token: %s: Header:%s Timeout: %s Holdoff: %s",
                 attempt + 1,
+                self._fetch_retries + 1,
                 url,
                 self.use_enlighten_owner_token,
                 header,
+                self._fetch_timeout_seconds,
+                self._fetch_holdoff_seconds,
             )
-            try:
-                async with self.async_client as client:
+            async with self.async_client as client:
+                try:
+                    getstart = time.time()
                     resp = await client.get(
-                        url, headers=self._authorization_header, timeout=30, **kwargs
+                        url, headers=self._authorization_header, timeout=self._fetch_timeout_seconds, **kwargs
                     )
-                    if resp.status_code == 401 and attempt < 2:
+                    getend = time.time()
+                    if resp.status_code == 401 and attempt < self._fetch_retries:
                         if self.use_enlighten_owner_token:
                             _LOGGER.debug(
-                                "Received 401 from Envoy; refreshing cookies, attempt %s of 2:",
-                                attempt+1
+                                "Received 401 from Envoy; refreshing cookies, in attempt %s of %s:",
+                                attempt+1,
+                                self._fetch_retries + 1
                              )
                             could_refresh_cookies = await self._refresh_token_cookies()
                             if not could_refresh_cookies:
                                 _LOGGER.debug(
-                                    "cookie refresh failed, getting token, attempt %s of 2:",
-                                    attempt+1
+                                    "cookie refresh failed, getting token, in attempt %s of %s:",
+                                    attempt+1,
+                                    self._fetch_retries + 1
                                 )
                                 await self._getEnphaseToken()
                             continue
                         # don't try token and cookies refresh for legacy envoy
                         else:
                             _LOGGER.debug(
-                                "Received 401 from Envoy; retrying, attempt %s of 2",
-                                attempt+1
+                                "Received 401 from Envoy; retrying, attempt %s of %s",
+                                attempt+1,
+                                self._fetch_retries + 1
                             )
                             continue
-                    _LOGGER.debug("Fetched (%s) from %s: %s: %s",  attempt + 1, url, resp, resp.text)
+                    _LOGGER.debug("Fetched (%s of %s) in %s sec from %s: %s: %s",
+                        attempt + 1,
+                        self._fetch_retries + 1,
+                        round(getend - getstart,1),
+                        url, 
+                        resp, 
+                        resp.text
+                    )
                     if resp.status_code == 404:
                         return None
                     return resp
-            except httpx.TransportError:
-                if attempt == 2:
-                    raise
+                
+                except httpx.TimeoutException as exc:
+                    if attempt == self._fetch_retries:
+                        _LOGGER.warning("HTTP Timeout in fetch_with_retry, raising: %s",exc)
+                        raise
+                    # Sleep a bit and try once more
+                    _LOGGER.warning("HTTP Timeout in fetch_with_retry, waiting %s sec: %s",self._fetch_holdoff_seconds,exc)
+                    await asyncio.sleep(self._fetch_holdoff_seconds)
+                except Exception as exc:
+                    if attempt == self._fetch_retries:
+                        _LOGGER.warning("Error in fetch_with_retry, raising: %s",exc)
+                        raise
+                    # Sleep a bit and try once more
+                    _LOGGER.warning("Error in fetch_with_retry, waiting %s sec: %s",self._fetch_holdoff_seconds,exc)
+                    await asyncio.sleep(self._fetch_holdoff_seconds)
 
-    async def _async_post(self, url, data=None, cookies=None, **kwargs):
+    async def _async_post(self, url, data, cookies=None, client=None, **kwargs):
         _LOGGER.debug("HTTP POST Attempt: %s", url)
+        if client is None:
+            client = self.async_client
         # _LOGGER.debug("HTTP POST Data: %s", data)
         try:
-            async with self.async_client as client:
+            async with client:
                 resp = await client.post(
                     url, cookies=cookies, data=data, timeout=30, **kwargs
                 )
@@ -296,7 +337,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _fetch_owner_token_json(self) :
         """Try to fetch the owner token json from Enlighten API"""
-        async with self.async_client as client:
+        async with self.non_local_async_client as client:
             # login to the enlighten website
             payload_login = {
                 'user[email]': self.enlighten_user,
@@ -304,7 +345,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             }
             resp = await client.post(ENLIGHTEN_AUTH_URL, data=payload_login, timeout=30)
             if resp.status_code >= 400:
-                raise RuntimeError("Could not Authenticate via Enlighten")
+                raise RuntimeError(f"Could not Authenticate with Enlighten, status: {resp.status_code}, {resp}")
 
             # now that we're in a logged in session, we can request the 1 year owner token via enlighten
             login_data = resp.json()
@@ -317,7 +358,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 ENLIGHTEN_TOKEN_URL, json=payload_token, timeout=30
             )
             if resp.status_code != 200:
-                raise RuntimeError("Could not get enlighten token")
+                raise RuntimeError(f"Could not get enlighten token, status: {resp.status_code}, {resp}")
             return resp.text
 
     async def _getEnphaseToken(self):
@@ -961,6 +1002,50 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         device_data["Using-UseEnligthen"] = self.use_enlighten_owner_token
         device_data["Using-InfoUpdateInterval"] = self.info_refresh_buffer_seconds
         device_data["Using-hasgridstatus"] = self.has_grid_status
+        device_data["Using-FetchRetryCount"] = self._fetch_retries
+        device_data["Using-FetchTimeOut"] = self._fetch_timeout_seconds
+        device_data["Using-FetchHoldoff"] = self._fetch_holdoff_seconds
+
+        if self.endpoint_production_json_results:
+            device_data[
+                "Endpoint-production_json"
+            ] = self.endpoint_production_json_results.text
+        else:
+            device_data[
+                "Endpoint-production_json"
+            ] = self.endpoint_production_json_results
+        if self.endpoint_production_v1_results:
+            device_data[
+                "Endpoint-production_v1"
+            ] = self.endpoint_production_v1_results.text
+        else:
+            device_data["Endpoint-production_v1"] = self.endpoint_production_v1_results
+        if self.endpoint_production_results:
+            device_data["Endpoint-production"] = self.endpoint_production_results.text
+        else:
+            device_data["Endpoint-production"] = self.endpoint_production_results
+        if self.endpoint_production_inverters:
+            device_data[
+                "Endpoint-production_inverters"
+            ] = self.endpoint_production_inverters.text
+        else:
+            device_data[
+                "Endpoint-production_inverters"
+            ] = self.endpoint_production_inverters
+        if self.endpoint_ensemble_json_results:
+            device_data[
+                "Endpoint-ensemble_json"
+            ] = self.endpoint_ensemble_json_results.text
+        else:
+            device_data["Endpoint-ensemble_json"] = self.endpoint_ensemble_json_results
+        if self.endpoint_home_json_results:
+            device_data["Endpoint-home"] = self.endpoint_home_json_results.text
+        else:
+            device_data["Endpoint-home"] = self.endpoint_home_json_results
+        if self.endpoint_info_results:
+            device_data["Endpoint-info"] = self.endpoint_info_results.text
+        else:
+            device_data["Endpoint-info"] = self.endpoint_info_results
 
         return device_data
 
