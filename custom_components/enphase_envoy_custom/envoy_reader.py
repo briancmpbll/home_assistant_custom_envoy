@@ -168,6 +168,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                                                        headers=self._authorization_header,
                                                        cookies=self._cookies)
 
+    @property
+    def non_local_async_client(self):
+        """Return the httpx client for non-local usage."""
+        return self._async_client or httpx.AsyncClient(verify=True,
+                                                       headers=self._authorization_header,
+                                                       cookies=self._cookies)
+
     async def _update(self):
         """Update the data."""
         if self.endpoint_type == ENVOY_MODEL_S:
@@ -307,12 +314,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     _LOGGER.warning("Error in fetch_with_retry, waiting %s sec: %s",self._fetch_holdoff_seconds,exc)
                     await asyncio.sleep(self._fetch_holdoff_seconds)
 
-
-    async def _async_post(self, url, data=None, cookies=None, **kwargs):
+    async def _async_post(self, url, data, cookies=None, client=None, **kwargs):
         _LOGGER.debug("HTTP POST Attempt: %s", url)
+        if client is None:
+            client = self.async_client
         # _LOGGER.debug("HTTP POST Data: %s", data)
         try:
-            async with self.async_client as client:
+            async with client:
                 resp = await client.post(
                     url, cookies=cookies, data=data, timeout=30, **kwargs
                 )
@@ -324,7 +332,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _fetch_owner_token_json(self) :
         """Try to fetch the owner token json from Enlighten API"""
-        async with self.async_client as client:
+        async with self.non_local_async_client as client:
             # login to the enlighten website
             payload_login = {
                 'user[email]': self.enlighten_user,
