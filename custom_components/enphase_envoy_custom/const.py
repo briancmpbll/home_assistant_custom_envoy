@@ -112,6 +112,20 @@ SENSORS = (
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY
     ),
+    SensorEntityDescription(
+        key="import_index",
+        name="Index Import",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="export_index",
+        name="Index Export",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
 )
 
 BINARY_SENSORS = (
@@ -239,6 +253,48 @@ PHASE_SENSORS = (
     SensorEntityDescription(
         key="lifetime_consumption_l3",
         name="Lifetime Energy Consumption L3",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="import_index_l1",
+        name="Index Import L1",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="export_index_l1",
+        name="Index Export L1",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="import_index_l2",
+        name="Index Import L2",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="export_index_l2",
+        name="Index Export L2",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="import_index_l3",
+        name="Index Import L3",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+    ),
+    SensorEntityDescription(
+        key="export_index_l3",
+        name="Index Export L3",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,

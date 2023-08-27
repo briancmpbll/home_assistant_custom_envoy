@@ -96,6 +96,7 @@ What data is available depends on how many current transformer clamps (CT) are i
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption over all phases.
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption for each individual phase named L1, L2 and L3.
 - Current power production for each connected inverter.
+- Energy Import and Export Index over all phases and for each phase individually from meters readings
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 
@@ -128,7 +129,7 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4,5|
 |Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4,5|
 |Grid Status |binary_sensor.grid_status|On/Off|3|
-Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_L\<n\>|W|4,5|
+|Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_L\<n\>|W|4,5|
 |Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_L\<n\>|Wh|4,5|
 |Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production L\<n\>|Wh|4,5|
 |Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5|
@@ -136,6 +137,10 @@ Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_p
 |Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
+|Index Import|sensor.Envoy_\<serialnumber\>_index_import|4,5|
+|Index Export|sensor.Envoy_\<serialnumber\>_index_export|4,5|
+|Index Import L\<n\>|sensor.Envoy_\<serialnumber\>_index_import_L\<n\>|4,5|
+|Index Export L\<n\>|sensor.Envoy_\<serialnumber\>_index_export_L\<n\>|4,5|
 
 1 Always zero for Envoy Metered without meters.  
 2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
