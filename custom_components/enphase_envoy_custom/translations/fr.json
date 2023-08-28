@@ -21,5 +21,18 @@
                 }
             }
         }
-    }
+    },
+	"options": {
+	    "step": {
+	        "user": {
+	            "title": "Options Envoy",
+	            "data": {
+	                "data_interval": "Temps entre 2 rafraichissement [s]"
+	            },
+	            "data_description": {
+	                "data_interval": "Temps entre 2 rafraichissement, minimum 5 sec. Relancer apres un changement"
+	            }
+	        }
+	    }
+	}
 }
