@@ -137,10 +137,10 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
-|Index Import|sensor.Envoy_\<serialnumber\>_index_import|4,5|
-|Index Export|sensor.Envoy_\<serialnumber\>_index_export|4,5|
-|Index Import L\<n\>|sensor.Envoy_\<serialnumber\>_index_import_L\<n\>|4,5|
-|Index Export L\<n\>|sensor.Envoy_\<serialnumber\>_index_export_L\<n\>|4,5|
+|Index Import|sensor.Envoy_\<sn\>_index_import|Wh|4,5|
+|Index Export|sensor.Envoy_\<sn\>_index_export|Wh|4,5|
+|Index Import L\<n\>|sensor.Envoy_\<sn\>_index_import_L\<n\>|Wh|4,5|
+|Index Export L\<n\>|sensor.Envoy_\<sn\>_index_export_L\<n\>|Wh|4,5|
 
 1 Always zero for Envoy Metered without meters.  
 2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
