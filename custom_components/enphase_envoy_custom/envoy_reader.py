@@ -1,18 +1,21 @@
 """Module to read production and consumption values from an Enphase Envoy on the local network."""
 import argparse
-import asyncio
 import datetime
 import logging
-import jwt
-import re
 import time
 from json.decoder import JSONDecodeError
+import json
+from ipaddress import IPv4Address, IPv6Address
+import sys
+import getpass
 
+#Modules not in standard Python Library - add to manifest requirements
+import re
+import jwt
+import asyncio
 import httpx
 import xmltodict
 from envoy_utils.envoy_utils import EnvoyUtils
-from homeassistant.util.network import is_ipv6_address
-import json
 
 #
 # Legacy parser is only used on ancient firmwares
@@ -62,6 +65,14 @@ def has_metering_setup(json):
     """Check if Active Count of Production CTs (eim) installed is greater than one."""
     return json["production"][1]["activeCount"] > 0
 
+    
+def is_ipv6_address(address: str) -> bool:
+    """Check if a given string is an IPv6 address."""
+    try:
+        IPv6Address(address)
+    except ValueError:
+        return False
+    return True
 
 class SwitchToHTTPS(Exception):
     pass
@@ -112,7 +123,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         fetch_retries=1,
     ):
         """Init the EnvoyReader."""
-        self.host = host.lower()
+        self.host = host.lower().replace('[','').replace(']','')
         # IPv6 addresses need to be enclosed in brackets
         if is_ipv6_address(self.host):
             self.host = f"[{self.host}]"
@@ -1143,20 +1154,25 @@ if __name__ == "__main__":
         help="Envoy IP address.",
     )
     parser.add_argument(
-        "-d",
-        "--dumpraw",
-        dest="dumpraw",
+        "-r",
+        "--rawdump",
+        dest="rawdump",
         help="Dump raw json content of envoy info",
         action='store_true'
     )
+    parser.add_argument(
+        "-d",
+        "--debuglog",
+        dest="debuglog",
+        help="Enable Debug log output",
+        action='store_true'
+    )
+
     args = parser.parse_args()
 
-    if (
-        args.username is not None
-        and args.password is not None
-        and args.ownertoken is not None
-    ):
-        SECURE = "s"
+    if args.debuglog:
+        _LOGGER.setLevel(logging.DEBUG)
+        _LOGGER.addHandler(logging.StreamHandler(sys.stdout))
 
     if args.host_ip is None:
         HOST = input(
@@ -1168,25 +1184,56 @@ if __name__ == "__main__":
 
     if args.username is None:
         USERNAME = input(
-            "Enter the Username for Inverter data authentication, "
+            "Enter the Username for Enphase site or Envoy, "
             + "or press enter to use 'envoy' as default: "
         )
     else:
         USERNAME = args.username
 
     if args.password is None:
-        PASSWORD = input(
-            "Enter the Password for Inverter data authentication, "
+        PASSWORD = getpass.getpass(
+            "Enter the Password for Enphase site or Envoy, "
             + "or press enter to use the default password: "
         )
     else:
         PASSWORD = args.password
+
+    if (
+        args.username is None
+        and args.password is None
+        and args.ownertoken == False
+        and USERNAME != ""
+        and PASSWORD != ""
+    ):
+        OWNERTOKEN = (input(
+            "Use Token from Enphase to login to Envoy (Y/N):"
+        ).lower()[0]=="y")
+    else:
+        OWNERTOKEN = args.ownertoken
+
+    if OWNERTOKEN and args.enlighten_serial_num is None:
+        SERIALNUM = input(
+            "Enter the Envoy serialnumber: "
+        )
+    else:
+        SERIALNUM = args.enlighten_serial_num
+
+    if OWNERTOKEN:
+        SECURE = "s"
+    else:
+        SECURE = ""
 
     if HOST == "":
         HOST = "envoy"
 
     if USERNAME == "":
         USERNAME = "envoy"
+
+    _LOGGER.debug("Host %s",HOST)
+    _LOGGER.debug("Username %s",USERNAME)
+    _LOGGER.debug("Password specified %s",PASSWORD!="")
+    _LOGGER.debug("serialnum %s",SERIALNUM)
+    _LOGGER.debug("Secure %s",SECURE)
 
     TESTREADER = EnvoyReader(
         HOST,
@@ -1195,9 +1242,9 @@ if __name__ == "__main__":
         enlighten_user=USERNAME,
         enlighten_pass=PASSWORD,
         inverters=True,
-        enlighten_serial_num=args.enlighten_serial_num,
+        enlighten_serial_num=SERIALNUM,
         https_flag=SECURE,
-        use_enlighten_owner_token=args.ownertoken
+        use_enlighten_owner_token=OWNERTOKEN
     )
 
-    TESTREADER.run_in_console(args.dumpraw)
+    TESTREADER.run_in_console(args.rawdump)
