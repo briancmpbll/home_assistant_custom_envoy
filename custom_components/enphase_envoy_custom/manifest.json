@@ -2,7 +2,12 @@
   "domain": "enphase_envoy",
   "name": "Enphase Envoy (DEV)",
   "documentation": "https://github.com/briancmpbll/home_assistant_custom_envoy#readme",
-  "requirements": ["envoy-utils"],
+  "requirements": [
+    "pyjwt",
+    "xmltodict",
+    "httpx",
+    "envoy_utils"
+  ],
   "codeowners": ["@briancmpbll"],
   "config_flow": true,
   "iot_class": "local_polling",
