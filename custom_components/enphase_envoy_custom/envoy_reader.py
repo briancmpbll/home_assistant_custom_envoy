@@ -12,6 +12,7 @@ import httpx
 import xmltodict
 from envoy_utils.envoy_utils import EnvoyUtils
 from homeassistant.util.network import is_ipv6_address
+import json
 
 #
 # Legacy parser is only used on ancient firmwares
@@ -1057,7 +1058,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return device_data
 
-    def run_in_console(self):
+    def run_in_console(self, dumpraw=False):
         """If running this module directly, print all the values in the console."""
         print("Reading...")
         loop = asyncio.get_event_loop()
@@ -1080,6 +1081,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.export_index(),
                 self.inverters_production(),
                 self.battery_storage(),
+                self.envoy_info(),
                 return_exceptions=False,
             )
         )
@@ -1105,6 +1107,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         else:
             print(f"inverters_production:    {results[10]}")
         print(f"battery_storage:         {results[11]}")
+        if dumpraw:
+            print(f"envoy_info:              {json.dumps(results[12],indent=2)}")
 
 
 if __name__ == "__main__":
@@ -1114,59 +1118,69 @@ if __name__ == "__main__":
         description="Retrieve energy information from the Enphase Envoy device."
     )
     parser.add_argument(
-        "-u", "--user", dest="enlighten_user", help="Enlighten Username"
+        "-u", "--user", dest="username", help="Username (Envoy or Enphase)"
     )
     parser.add_argument(
-        "-p", "--pass", dest="enlighten_pass", help="Enlighten Password"
-    )
-    parser.add_argument(
-        "-c",
-        "--comissioned",
-        dest="commissioned",
-        help="Commissioned Envoy (True/False)",
+        "-p", "--pass", dest="password", help="Password (Envoy or Enphase)"
     )
     parser.add_argument(
         "-o",
         "--ownertoken",
         dest="ownertoken",
-        help="use the 6 month owner token  from enlighten instead of the 1hr entrez token",
+        help="Use Enphase owner token from enlighten",
         action='store_true'
-    )
-    parser.add_argument(
-        "-i",
-        "--siteid",
-        dest="enlighten_site_id",
-        help="Enlighten Site ID. Only used when Commissioned=True.",
     )
     parser.add_argument(
         "-s",
         "--serialnum",
         dest="enlighten_serial_num",
-        help="Enlighten Envoy Serial Number. Only used when Commissioned=True.",
+        help="Envoy Serial Number. Needed to get Token from Enphase",
+    )
+    parser.add_argument(
+        "-i",
+        "--ipaddress",
+        dest="host_ip",
+        help="Envoy IP address.",
+    )
+    parser.add_argument(
+        "-d",
+        "--dumpraw",
+        dest="dumpraw",
+        help="Dump raw json content of envoy info",
+        action='store_true'
     )
     args = parser.parse_args()
 
     if (
-        args.enlighten_user is not None
-        and args.enlighten_pass is not None
-        and args.commissioned is not None
+        args.username is not None
+        and args.password is not None
+        and args.ownertoken is not None
     ):
         SECURE = "s"
 
-    HOST = input(
-        "Enter the Envoy IP address or host name, "
-        + "or press enter to use 'envoy' as default: "
-    )
+    if args.host_ip is None:
+        HOST = input(
+            "Enter the Envoy IP address or host name, "
+            + "or press enter to use 'envoy' as default: "
+        )
+    else:
+        HOST = args.host_ip 
 
-    USERNAME = input(
-        "Enter the Username for Inverter data authentication, "
-        + "or press enter to use 'envoy' as default: "
-    )
+    if args.username is None:
+        USERNAME = input(
+            "Enter the Username for Inverter data authentication, "
+            + "or press enter to use 'envoy' as default: "
+        )
+    else:
+        USERNAME = args.username
 
-    PASSWORD = input(
-        "Enter the Password for Inverter data authentication, "
-        + "or press enter to use the default password: "
-    )
+    if args.password is None:
+        PASSWORD = input(
+            "Enter the Password for Inverter data authentication, "
+            + "or press enter to use the default password: "
+        )
+    else:
+        PASSWORD = args.password
 
     if HOST == "":
         HOST = "envoy"
@@ -1174,32 +1188,16 @@ if __name__ == "__main__":
     if USERNAME == "":
         USERNAME = "envoy"
 
-    if PASSWORD == "":
-        TESTREADER = EnvoyReader(
-            HOST,
-            USERNAME,
-            inverters=True,
-            enlighten_user=args.enlighten_user,
-            enlighten_pass=args.enlighten_pass,
-            commissioned=args.commissioned,
-            enlighten_site_id=args.enlighten_site_id,
-            enlighten_serial_num=args.enlighten_serial_num,
-            https_flag=SECURE,
-            use_enlighten_owner_token=args.ownertoken
-        )
-    else:
-        TESTREADER = EnvoyReader(
-            HOST,
-            USERNAME,
-            PASSWORD,
-            inverters=True,
-            enlighten_user=args.enlighten_user,
-            enlighten_pass=args.enlighten_pass,
-            commissioned=args.commissioned,
-            enlighten_site_id=args.enlighten_site_id,
-            enlighten_serial_num=args.enlighten_serial_num,
-            https_flag=SECURE,
-            use_enlighten_owner_token=args.ownertoken
-        )
+    TESTREADER = EnvoyReader(
+        HOST,
+        username=USERNAME,
+        password=PASSWORD,
+        enlighten_user=USERNAME,
+        enlighten_pass=PASSWORD,
+        inverters=True,
+        enlighten_serial_num=args.enlighten_serial_num,
+        https_flag=SECURE,
+        use_enlighten_owner_token=args.ownertoken
+    )
 
-    TESTREADER.run_in_console()
+    TESTREADER.run_in_console(args.dumpraw)
