@@ -992,7 +992,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """PF"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"pf_l1": 0, "pf_l2": 1, "pf_l3": 2}
+        phase_map = {"current_pf_l1": 0, "current_pf_l2": 1, "current_pf_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1026,7 +1026,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """voltage"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"voltage_l1": 0, "voltage_l2": 1, "voltage_l3": 2}
+        phase_map = {"current_voltage_l1": 0, "current_voltage_l2": 1, "current_voltage_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
