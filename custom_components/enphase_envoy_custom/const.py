@@ -8,11 +8,13 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
-    SensorStateClass,
+    SensorStateClass
+
 )
 from homeassistant.const import (
     UnitOfEnergy, 
     UnitOfPower, 
+    UnitOfElectricPotential,
     Platform, 
     PERCENTAGE
 )
@@ -326,24 +328,28 @@ PHASE_SENSORS = (
     SensorEntityDescription(
         key="voltage",
         name="Voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="voltage_l1",
         name="Voltage L1",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="voltage_l2",
         name="Voltage L2",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="voltage_l3",
         name="Voltage L3",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         entity_registry_enabled_default=False,
     ),
