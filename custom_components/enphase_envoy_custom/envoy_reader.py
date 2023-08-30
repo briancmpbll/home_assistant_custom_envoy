@@ -986,7 +986,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         
         raw_json = self.endpoint_meters_json_results.json()
         current_pf = raw_json[1]['pwrFactor']
-        return int(current_pf)
+        return float(current_pf)
 
     async def current_pf_phase(self, phase):
         """PF"""
@@ -1002,7 +1002,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return None
         
         try:
-            return int(
+            return float(
                 raw_json[1]["channels"][phase_map[phase]]["pwrFactor"]
             )
         except (KeyError, IndexError):
@@ -1020,7 +1020,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         
         raw_json = self.endpoint_meters_json_results.json()
         current_voltage = raw_json[1]['voltage']
-        return int(current_voltage)
+        return float(current_voltage)
 
     async def current_voltage_phase(self, phase):
         """voltage"""
@@ -1036,7 +1036,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return None
         
         try:
-            return int(
+            return float(
                 raw_json[1]["channels"][phase_map[phase]]["voltage"]
             )
         except (KeyError, IndexError):
