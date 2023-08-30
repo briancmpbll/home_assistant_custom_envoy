@@ -654,7 +654,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             raw_json = self.endpoint_meters_json_results.json()
             try:
                 return int(
-                    raw_json[0]["cumulative"]["lines"][phase_map[phase]]["currW"]
+                    raw_json[0]["lines"][phase_map[phase]]["currW"]
                 )
             except (KeyError, IndexError):
                 return None
@@ -694,7 +694,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
-                return int(raw_json[2]["cumulative"]["lines"][phase_map[phase]]["currW"])
+                return int(raw_json[2]["lines"][phase_map[phase]]["currW"])
             except (KeyError, IndexError):
                 return None
 
@@ -709,7 +709,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
-                return int(raw_json[1]["cumulative"]["lines"][phase_map[phase]]["currW"])
+                return int(raw_json[1]["lines"][phase_map[phase]]["currW"])
             except (KeyError, IndexError):
                 return None
         
@@ -881,7 +881,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             raw_json = self.endpoint_meters_json_results.json()
             try:
                 return int(
-                    raw_json[0]["cumulative"]["lines"][phase_map[phase]]["whDlvdCum"]
+                    raw_json[0]["lines"][phase_map[phase]]["whDlvdCum"]
                 )
             except (KeyError, IndexError):
                 return None
@@ -896,7 +896,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and self.isConsumptionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
-                return int(raw_json[1]["cumulative"]["lines"][phase_map[phase]]["whRcvdCum"])
+                return int(raw_json[1]["lines"][phase_map[phase]]["whRcvdCum"])
             except (KeyError, IndexError):
                 return None
 
@@ -935,7 +935,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
-                return int(raw_json[2]["cumulative"]["lines"][phase_map[phase]]["whDlvdCum"])
+                return int(raw_json[2]["lines"][phase_map[phase]]["whDlvdCum"])
             except (KeyError, IndexError):
                 return None
 
@@ -950,7 +950,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
-                return int(raw_json[1]["cumulative"]["lines"][phase_map[phase]]["whDlvdCum"])
+                return int(raw_json[1]["lines"][phase_map[phase]]["whDlvdCum"])
             except (KeyError, IndexError):
                 return None
 
