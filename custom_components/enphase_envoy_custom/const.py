@@ -299,6 +299,59 @@ PHASE_SENSORS = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
+    SensorEntityDescription(
+        key="fp",
+        name="Power Factor",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="fp_l1",
+        name="Power Factor L1",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="fp_l2",
+        name="Power Factor L2",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="fp_l3",
+        name="Power Factor L3",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage",
+        name="Voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage_l1",
+        name="Voltage L1",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage_l2",
+        name="Voltage L2",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage_l3",
+        name="Voltage L3",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+
 )
 
 BATTERY_ENERGY_DISCHARGED_SENSOR = SensorEntityDescription(
