@@ -650,7 +650,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
         phase_map = {"production_l1": 0, "production_l2": 1, "production_l3": 2}
 
-        if self.endpoint_type == ENVOY_MODEL_S and isProductionMeteringEnabled:
+        if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
                 return int(
@@ -877,7 +877,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
         phase_map = {"lifetime_production_l1": 0,"lifetime_production_l2": 1,"lifetime_production_l3": 2}
 
-        if self.endpoint_type == ENVOY_MODEL_S and isProductionMeteringEnabled:
+        if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled:
             raw_json = self.endpoint_meters_json_results.json()
             try:
                 return int(
