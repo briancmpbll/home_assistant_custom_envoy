@@ -17,9 +17,10 @@
                     "password": "Mot de passe",
                     "username": "Nom d'utilisateur",
                     "serial": "Num\u00c9ro de s\u00c9rie envoy",
-                    "use_enlighten": "Utiliser Enlighten"
-                }
-            }
+                    "use_enlighten": "R\u00c9cup\u00c9ration d'un Token"
+		},
+		"description": "- Si votre Envoy est \u00c9quip\u00c9 du micrologiciel 7.x ou version ultérieure, validez ou saisissez l'adresse IP de l'hôte de votre Envoy, votre nom d'utilisateur de site Web Enphase, votre mot de passe, le num\u00c9ro de série de votre Envoy et cochez la case « G\u00c9n\u00c9ration d'un Token ».\n- Pour les modèles plus anciens. ne cochez pas cette case et utilisez soit les noms d'utilisateur « envoy » sans mot de passe, « installer » sans mot de passe ou un nom d'utilisateur et un mot de passe valides et validez ou entrez l'adresse IP de l'hôte."
+      }
         }
     },
 	"options": {
@@ -27,10 +28,17 @@
 	        "user": {
 	            "title": "Options Envoy",
 	            "data": {
-	                "data_interval": "Temps entre 2 rafraichissement [s]"
+	                "data_interval": "Temps entre 2 rafraichissement [s]",
+			"data_fetch_timeout_seconds": "TimeOut pour obtenir une page de donn\u00c9es Envoy [s], minimum 5.",
+          		"data_fetch_retry_count": "Nombre de tentatives max pour obtenir une page de donn\u00c9es Envoy [s]. au minimum 1.",
+          		"data_fetch_holdoff_seconds": "D\u00c9lai entre 2 tentatives pour obtenir une page de donn\u00c9es Envoy [s], minimum 0.",
+          		"data_collection_timeout_seconds": "TimeOut totale pour obtenir toutes les donn\u00c9es Envoy [s], minimum 30."
+        
 	            },
 	            "data_description": {
-	                "data_interval": "Temps entre 2 rafraichissement, minimum 5 sec. Relancer apres un changement"
+	                "data_interval": "Temps entre 2 rafraichissement, minimum 5 sec. Relancer apres un changement",
+			"data_collection_timeout_seconds": "Si la récupération des donn\u00c9es prend plus de temps que le TimeOut, elle sera annul\u00c9e"
+
 	            }
 	        }
 	    }
