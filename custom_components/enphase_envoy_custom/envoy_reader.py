@@ -975,6 +975,75 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return None
 
         return None
+    
+    async def pf(self):
+        """PF"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        pf = raw_json[1]['pwrFactor']
+        return int(pf)
+
+    async def pf_phase(self, phase):
+        """PF"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        phase_map = {"pf_l1": 0, "pf_l2": 1, "pf_l3": 2}
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return None
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        if raw_json[1]["channels"][1]["voltage"] < 50:
+            return None
+        
+        try:
+            return int(
+                raw_json[1]["channels"][phase_map[phase]]["pwrFactor"]
+            )
+        except (KeyError, IndexError):
+            return None
+
+        return None
+
+    async def voltage(self):
+        """PF"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        voltage = raw_json[1]['voltage']
+        return int(voltage)
+
+    async def voltage_phase(self, phase):
+        """PF"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        phase_map = {"voltage_l1": 0, "voltage_l2": 1, "voltage_l3": 2}
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return None
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        if raw_json[1]["channels"][1]["voltage"] < 50:
+            return None
+        
+        try:
+            return int(
+                raw_json[1]["channels"][phase_map[phase]]["voltage"]
+            )
+        except (KeyError, IndexError):
+            return None
+
+        return None
+
 
     async def grid_status(self):
         """Return grid status reported by Envoy"""
@@ -1078,6 +1147,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.lifetime_consumption(),
                 self.import_index(),
                 self.export_index(),
+                self.pf(),
+                self.voltage(),
                 self.inverters_production(),
                 self.battery_storage(),
                 return_exceptions=False,
@@ -1094,17 +1165,19 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         print(f"lifetime_consumption:    {results[7]}")
         print(f"index_import:            {results[8]}")
         print(f"index_export:            {results[9]}")
+        print(f"power_factor:            {results[10]}")
+        print(f"voltage:            {results[11]}")
         if "401" in str(data_results):
             print(
                 "inverters_production:    Unable to retrieve inverter data - Authentication failure"
             )
-        elif results[10] is None:
+        elif results[12] is None:
             print(
                 "inverters_production:    Inverter data not available for your Envoy device."
             )
         else:
-            print(f"inverters_production:    {results[10]}")
-        print(f"battery_storage:         {results[11]}")
+            print(f"inverters_production:    {results[12]}")
+        print(f"battery_storage:         {results[13]}")
 
 
 if __name__ == "__main__":
