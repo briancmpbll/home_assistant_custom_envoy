@@ -15,6 +15,7 @@ from homeassistant.const import (
     UnitOfEnergy, 
     UnitOfPower, 
     UnitOfElectricPotential,
+    UnitOfFrequency,
     Platform, 
     PERCENTAGE
 )
@@ -144,7 +145,7 @@ SENSORS = (
     SensorEntityDescription(
         key="current_frequency",
         name="Current Frequency",
-        native_unit_of_measurement=UnitOfElectricPotential.HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         entity_registry_enabled_default=False,
     ),
@@ -363,21 +364,21 @@ PHASE_SENSORS = (
     SensorEntityDescription(
         key="current_frequency_l1",
         name="Current Frequency L1",
-        native_unit_of_measurement=UnitOfElectricPotential.HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="current_frequency_l2",
         name="Current Frequency L2",
-        native_unit_of_measurement=UnitOfElectricPotential.HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="current_frequency_l3",
         name="Current Frequency L3",
-        native_unit_of_measurement=UnitOfElectricPotential.HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         entity_registry_enabled_default=False,
     ),
