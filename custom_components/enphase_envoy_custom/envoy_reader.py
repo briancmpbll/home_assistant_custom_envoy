@@ -948,7 +948,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_import_export_not_available
+            return None
         
         raw_json = self.endpoint_meters_json_results.json()
         index_exp = raw_json[1]['actEnergyRcvd']
@@ -976,19 +976,19 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
     
-    async def pf(self):
+    async def current_pf(self):
         """PF"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_import_export_not_available
+            return None
         
         raw_json = self.endpoint_meters_json_results.json()
-        pf = raw_json[1]['pwrFactor']
-        return int(pf)
+        current_pf = raw_json[1]['pwrFactor']
+        return int(current_pf)
 
-    async def pf_phase(self, phase):
+    async def current_pf_phase(self, phase):
         """PF"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
@@ -1010,8 +1010,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
 
-    async def voltage(self):
-        """PF"""
+    async def current_voltage(self):
+        """voltage"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
@@ -1019,11 +1019,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return self.message_import_export_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
-        voltage = raw_json[1]['voltage']
-        return int(voltage)
+        current_voltage = raw_json[1]['voltage']
+        return int(current_voltage)
 
-    async def voltage_phase(self, phase):
-        """PF"""
+    async def current_voltage_phase(self, phase):
+        """voltage"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         phase_map = {"voltage_l1": 0, "voltage_l2": 1, "voltage_l3": 2}
@@ -1147,8 +1147,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.lifetime_consumption(),
                 self.import_index(),
                 self.export_index(),
-                self.pf(),
-                self.voltage(),
+                self.current_pf(),
+                self.current_voltage(),
                 self.inverters_production(),
                 self.battery_storage(),
                 return_exceptions=False,
@@ -1165,8 +1165,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         print(f"lifetime_consumption:    {results[7]}")
         print(f"index_import:            {results[8]}")
         print(f"index_export:            {results[9]}")
-        print(f"power_factor:            {results[10]}")
-        print(f"voltage:            {results[11]}")
+        print(f"current_pf:              {results[10]}")
+        print(f"current_voltage:         {results[11]}")
         if "401" in str(data_results):
             print(
                 "inverters_production:    Unable to retrieve inverter data - Authentication failure"

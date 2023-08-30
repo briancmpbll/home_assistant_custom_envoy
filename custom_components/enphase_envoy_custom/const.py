@@ -128,6 +128,19 @@ SENSORS = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
+    SensorEntityDescription(
+        key="pf",
+        name="Power Factor",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage",
+        name="Voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
 )
 
 BINARY_SENSORS = (
@@ -302,12 +315,6 @@ PHASE_SENSORS = (
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
-        key="pf",
-        name="Power Factor",
-        device_class=SensorDeviceClass.POWER_FACTOR,
-        entity_registry_enabled_default=False,
-    ),
-    SensorEntityDescription(
         key="pf_l1",
         name="Power Factor L1",
         device_class=SensorDeviceClass.POWER_FACTOR,
@@ -323,13 +330,6 @@ PHASE_SENSORS = (
         key="pf_l3",
         name="Power Factor L3",
         device_class=SensorDeviceClass.POWER_FACTOR,
-        entity_registry_enabled_default=False,
-    ),
-    SensorEntityDescription(
-        key="voltage",
-        name="Voltage",
-        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
-        device_class=SensorDeviceClass.VOLTAGE,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
