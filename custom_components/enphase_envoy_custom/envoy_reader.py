@@ -1043,6 +1043,40 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return None
 
         return None
+    
+    async def current_frequency(self):
+        """current_frequency"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_import_export_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        current_frequency = raw_json[1]['freq']
+        return float(current_frequency)
+
+    async def current_frequency_phase(self, phase):
+        """current_frequency"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        phase_map = {"current_voltage_l1": 0, "current_voltage_l2": 1, "current_voltage_l3": 2}
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return None
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        if raw_json[1]["channels"][1]["voltage"] < 50:
+            return None
+        
+        try:
+            return float(
+                raw_json[1]["channels"][phase_map[phase]]["freq"]
+            )
+        except (KeyError, IndexError):
+            return None
+
+        return None
 
 
     async def grid_status(self):
@@ -1149,6 +1183,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.export_index(),
                 self.current_pf(),
                 self.current_voltage(),
+                self.current_frequency(),
                 self.inverters_production(),
                 self.battery_storage(),
                 return_exceptions=False,
@@ -1167,17 +1202,18 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         print(f"index_export:            {results[9]}")
         print(f"current_pf:              {results[10]}")
         print(f"current_voltage:         {results[11]}")
+        print(f"current_frequency:       {results[12]}")
         if "401" in str(data_results):
             print(
                 "inverters_production:    Unable to retrieve inverter data - Authentication failure"
             )
-        elif results[12] is None:
+        elif results[13] is None:
             print(
                 "inverters_production:    Inverter data not available for your Envoy device."
             )
         else:
-            print(f"inverters_production:    {results[12]}")
-        print(f"battery_storage:         {results[13]}")
+            print(f"inverters_production:    {results[13]}")
+        print(f"battery_storage:         {results[14]}")
 
 
 if __name__ == "__main__":
