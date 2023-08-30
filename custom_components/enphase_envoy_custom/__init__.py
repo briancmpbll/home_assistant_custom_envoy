@@ -97,6 +97,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     data[description.key] = await envoy_reader.consumption_phase(
                         description.key
                     )
+                elif description.key.startswith("net_consumption_"):
+                    data[description.key] = await envoy_reader.net_consumption_phase(
+                        description.key
+                    )
                 elif description.key.startswith("daily_production_"):
                     data[description.key] = await envoy_reader.daily_production_phase(
                         description.key
@@ -109,18 +113,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     data[
                         description.key
                     ] = await envoy_reader.lifetime_production_phase(description.key)
+                elif description.key.startswith("lifetime_net_production_"):
+                    data[
+                        description.key
+                    ] = await envoy_reader.lifetime_net_production_phase(description.key)
                 elif description.key.startswith("lifetime_consumption_"):
                     data[
                         description.key
                     ] = await envoy_reader.lifetime_consumption_phase(description.key)
-                elif description.key.startswith("import_index_"):
+                elif description.key.startswith("lifetime_net_consumption_"):
                     data[
                         description.key
-                    ] = await envoy_reader.import_index_phase(description.key)
-                elif description.key.startswith("export_index_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.export_index_phase(description.key)
+                    ] = await envoy_reader.lifetime_net_consumption_phase(description.key)
                     
             data["grid_status"] = await envoy_reader.grid_status()
             data["envoy_info"] = await envoy_reader.envoy_info()
