@@ -16,6 +16,7 @@ from homeassistant.const import (
     UnitOfPower, 
     UnitOfElectricPotential,
     UnitOfFrequency,
+    UnitOfElectricalCurrent,
     Platform, 
     PERCENTAGE
 )
@@ -145,8 +146,15 @@ SENSORS = (
     SensorEntityDescription(
         key="current_frequency",
         name="Current Frequency",
-        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="current_amps",
+        name="Current Amps",
+        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
+        device_class=SensorDeviceClass.AMPERE,
         entity_registry_enabled_default=False,
     ),
 )
@@ -364,22 +372,43 @@ PHASE_SENSORS = (
     SensorEntityDescription(
         key="current_frequency_l1",
         name="Current Frequency L1",
-        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="current_frequency_l2",
         name="Current Frequency L2",
-        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         entity_registry_enabled_default=False,
     ),
     SensorEntityDescription(
         key="current_frequency_l3",
         name="Current Frequency L3",
-        native_unit_of_measurement=UnitOfFrequency.FREQUENCY_HERTZ,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="current_amps_l1",
+        name="Current Amps L1",
+        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
+        device_class=SensorDeviceClass.AMPERE,
+        entity_registry_enabled_default=False,
+    ),
+     SensorEntityDescription(
+        key="current_amps_l2",
+        name="Current Amps L2",
+        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
+        device_class=SensorDeviceClass.AMPERE,
+        entity_registry_enabled_default=False,
+    ),
+     SensorEntityDescription(
+        key="current_amps_l3",
+        name="Current Amps L3",
+        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
+        device_class=SensorDeviceClass.AMPERE,
         entity_registry_enabled_default=False,
     ),
 
