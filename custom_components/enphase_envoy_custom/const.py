@@ -16,7 +16,7 @@ from homeassistant.const import (
     UnitOfPower, 
     UnitOfElectricPotential,
     UnitOfFrequency,
-    UnitOfElectricalCurrent,
+    UnitOfElectrical,
     Platform, 
     PERCENTAGE
 )
@@ -153,8 +153,8 @@ SENSORS = (
     SensorEntityDescription(
         key="current_amps",
         name="Current Amps",
-        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
-        device_class=SensorDeviceClass.AMPERE,
+        native_unit_of_measurement=UnitOfElectrical.CURRENT_AMPERE,
+        device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
 )
@@ -393,22 +393,22 @@ PHASE_SENSORS = (
     SensorEntityDescription(
         key="current_amps_l1",
         name="Current Amps L1",
-        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
-        device_class=SensorDeviceClass.AMPERE,
+        native_unit_of_measurement=UnitOfElectrical.CURRENT_AMPERE,
+        device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
      SensorEntityDescription(
         key="current_amps_l2",
         name="Current Amps L2",
-        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
-        device_class=SensorDeviceClass.AMPERE,
+        native_unit_of_measurement=UnitOfElectrical.CURRENT_AMPERE,
+        device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
      SensorEntityDescription(
         key="current_amps_l3",
         name="Current Amps L3",
-        native_unit_of_measurement=UnitOfElectricalCurrent.AMPERE,
-        device_class=SensorDeviceClass.AMPERE,
+        native_unit_of_measurement=UnitOfElectrical.CURRENT_AMPERE,
+        device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
 
