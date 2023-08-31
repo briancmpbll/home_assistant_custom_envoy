@@ -89,17 +89,17 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         "Import Export data not available for your Envoy device."
     )
 
-    message_current_frequency_not_available = (
+    message_frequency_not_available = (
         "Frequency data not available for your Envoy device."
     )
 
-    message_current_voltage_not_available = (
+    message_voltage_not_available = (
         "Voltage data not available for your Envoy device."
     )
-    message_current_pf_not_available = (
+    message_pf_not_available = (
         "Power Factor data not available for your Envoy device."
     )
-    message_current_amps_not_available = (
+    message_current_consumption_not_available = (
         "Amps data not available for your Envoy device."
     )
 
@@ -991,23 +991,23 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
     
-    async def current_pf(self):
+    async def pf(self):
         """PF"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_current_pf_not_available
+            return self.message_pf_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
-        current_pf = raw_json[1]['pwrFactor']
-        return float(current_pf)
+        pf = raw_json[1]['pwrFactor']
+        return float(pf)
 
-    async def current_pf_phase(self, phase):
+    async def pf_phase(self, phase):
         """PF"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"current_pf_l1": 0, "current_pf_l2": 1, "current_pf_l3": 2}
+        phase_map = {"pf_l1": 0, "pf_l2": 1, "pf_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1025,23 +1025,23 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
 
-    async def current_voltage(self):
+    async def voltage(self):
         """voltage"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_current_voltage_not_available
+            return self.message_voltage_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
-        current_voltage = raw_json[1]['voltage']
-        return float(current_voltage)
+        voltage = raw_json[1]['voltage']
+        return float(voltage)
 
-    async def current_voltage_phase(self, phase):
+    async def voltage_phase(self, phase):
         """voltage"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"current_voltage_l1": 0, "current_voltage_l2": 1, "current_voltage_l3": 2}
+        phase_map = {"voltage_l1": 0, "voltage_l2": 1, "voltage_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1059,23 +1059,23 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
     
-    async def current_frequency(self):
-        """current_frequency"""
+    async def frequency(self):
+        """frequency"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_current_frequency_not_available
+            return self.message_frequency_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
-        current_frequency = raw_json[1]['freq']
-        return float(current_frequency)
+        frequency = raw_json[1]['freq']
+        return float(frequency)
 
-    async def current_frequency_phase(self, phase):
-        """current_frequency"""
+    async def frequency_phase(self, phase):
+        """frequency"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"current_frequency_l1": 0, "current_frequency_l2": 1, "current_frequency_l3": 2}
+        phase_map = {"frequency_l1": 0, "frequency_l2": 1, "frequency_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1093,23 +1093,23 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
 
-    async def current_amps(self):
-        """current_amps"""
+    async def current_consumption(self):
+        """current_consumption"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_current_amps_not_available
+            return self.message_current_consumption_not_available
         
         raw_json = self.endpoint_meters_json_results.json()
-        current_amps = raw_json[1]['current']
-        return float(current_amps)
+        current_consumption = raw_json[1]['current']
+        return float(current_consumption)
 
-    async def current_amps_phase(self, phase):
-        """current_amps"""
+    async def current_consumption_phase(self, phase):
+        """current_consumption"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"current_amps_l1": 0, "current_amps_l2": 1, "current_amps_l3": 2}
+        phase_map = {"current_consumption_l1": 0, "current_consumption_l2": 1, "current_consumption_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1121,6 +1121,40 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         try:
             return float(
                 raw_json[1]["channels"][phase_map[phase]]["current"]
+            )
+        except (KeyError, IndexError):
+            return None
+
+        return None
+
+    async def current_production(self):
+        """current_production"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return self.message_current_production_not_available
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        current_production = raw_json[0]['current']
+        return float(current_production)
+
+    async def current_production_phase(self, phase):
+        """current_production"""
+        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
+        """so that this method will only read data from stored variables"""
+        phase_map = {"current_production_l1": 0, "current_production_l2": 1, "current_production_l3": 2}
+        
+        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
+            return None
+        
+        raw_json = self.endpoint_meters_json_results.json()
+        if raw_json[1]["channels"][1]["voltage"] < 50:
+            return None
+        
+        try:
+            return float(
+                raw_json[0]["channels"][phase_map[phase]]["current"]
             )
         except (KeyError, IndexError):
             return None
@@ -1230,10 +1264,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.lifetime_consumption(),
                 self.import_index(),
                 self.export_index(),
-                self.current_pf(),
-                self.current_voltage(),
-                self.current_frequency(),
-                self.current_amps(),
+                self.pf(),
+                self.voltage(),
+                self.frequency(),
+                self.current_consumption(),
+                self.current_production(),
                 self.inverters_production(),
                 self.battery_storage(),
                 return_exceptions=False,
@@ -1250,21 +1285,22 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         print(f"lifetime_consumption:    {results[7]}")
         print(f"index_import:            {results[8]}")
         print(f"index_export:            {results[9]}")
-        print(f"current_pf:              {results[10]}")
-        print(f"current_voltage:         {results[11]}")
-        print(f"current_frequency:       {results[12]}")
-        print(f"current_amps:            {results[13]}")
+        print(f"pf:                      {results[10]}")
+        print(f"voltage:                 {results[11]}")
+        print(f"frequency:               {results[12]}")
+        print(f"current_consumption:     {results[13]}")
+        print(f"current_production:      {results[14]}")
         if "401" in str(data_results):
             print(
                 "inverters_production:    Unable to retrieve inverter data - Authentication failure"
             )
-        elif results[14] is None:
+        elif results[15] is None:
             print(
                 "inverters_production:    Inverter data not available for your Envoy device."
             )
         else:
-            print(f"inverters_production:    {results[14]}")
-        print(f"battery_storage:         {results[15]}")
+            print(f"inverters_production:    {results[15]}")
+        print(f"battery_storage:         {results[16]}")
 
 
 if __name__ == "__main__":

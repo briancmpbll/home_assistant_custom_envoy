@@ -102,6 +102,8 @@ What data is available depends on how many current transformer clamps (CT) are i
 - Current voltage for each individual phase named L1, L2 and L3.
 - Current frequency over all phases.
 - Current frequency for each individual phase named L1, L2 and L3.
+- Current Amps production and consumption over all phases.
+- Current Amps production and consumption for each individual phase named L1, L2 and L3.
 - Energy Import and Export Index over all phases and for each phase individually from meters readings
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
