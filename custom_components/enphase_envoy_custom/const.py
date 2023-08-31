@@ -152,7 +152,7 @@ SENSORS = (
     SensorEntityDescription(
         key="current_amps",
         name="Current Amps",
-        unit_of_measurement="A",
+        native_unit_of_measurement="A",
         device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
@@ -392,21 +392,21 @@ PHASE_SENSORS = (
     SensorEntityDescription(
         key="current_amps_l1",
         name="Current Amps L1",
-        unit_of_measurement="A",
+        native_unit_of_measurement="A",
         device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
      SensorEntityDescription(
         key="current_amps_l2",
         name="Current Amps L2",
-        unit_of_measurement="A",
+        native_unit_of_measurement="A",
         device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
      SensorEntityDescription(
         key="current_amps_l3",
         name="Current Amps L3",
-        unit_of_measurement="A",
+        native_unit_of_measurement="A",
         device_class=SensorDeviceClass.CURRENT,
         entity_registry_enabled_default=False,
     ),
