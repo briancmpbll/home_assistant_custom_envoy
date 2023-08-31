@@ -100,7 +100,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         "Power Factor data not available for your Envoy device."
     )
     message_current_consumption_not_available = (
-        "Amps data not available for your Envoy device."
+        "Amps consumption data not available for your Envoy device."
+    )
+    message_current_production_not_available = (
+        "Amps production data not available for your Envoy device."
     )
 
 
