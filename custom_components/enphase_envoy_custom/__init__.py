@@ -124,7 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 elif description.key.startswith("pf_"):
                     data[
                         description.key
-                    ] = await envoy_reader.current_pf_phase(description.key)
+                    ] = await envoy_reader.pf_phase(description.key)
                 elif description.key.startswith("voltage_"):
                     data[
                         description.key
@@ -132,7 +132,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 elif description.key.startswith("frequency_"):
                     data[
                         description.key
-                    ] = await envoy_reader.current_frequency_phase(description.key)
+                    ] = await envoy_reader.frequency_phase(description.key)
                 elif description.key.startswith("current_production_"):
                     data[
                         description.key
