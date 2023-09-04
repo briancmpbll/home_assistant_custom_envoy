@@ -209,13 +209,13 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def _update_from_pc_endpoint(self):
         """Update from PC endpoint."""
         await self._update_endpoint(
+            "endpoint_meters_json_results", ENDPOINT_URL_METERS
+        )
+        await self._update_endpoint(
             "endpoint_production_json_results", ENDPOINT_URL_PRODUCTION_JSON
         )
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
-        )
-        await self._update_endpoint(
-            "endpoint_meters_json_results", ENDPOINT_URL_METERS
         )
         if self.has_grid_status:
             await self._update_endpoint(
@@ -923,8 +923,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return raw_json["storage"][0]
 
-    async def import_index(self):
-        """import index"""
+    async def lifetime_energy_import(self):
+        """lifetime energy import"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
@@ -934,11 +934,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         index_imp = raw_json[1]["actEnergyDlvd"]
         return int(index_imp)
 
-    async def import_index_phase(self, phase):
-        """import index"""
+    async def lifetime_energy_import_phase(self, phase):
+        """lifetime energy import"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"import_index_l1": 0, "import_index_l2": 1, "import_index_l3": 2}
+        phase_map = {"lifetime_energy_import_l1": 0, "lifetime_energy_import_l2": 1, "lifetime_energy_import_l3": 2}
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
         
@@ -954,8 +954,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
 
-    async def export_index(self):
-        """import export"""
+    async def lifetime_energy_export(self):
+        """lifetime energy export"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
         
@@ -966,11 +966,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         index_exp = raw_json[1]['actEnergyRcvd']
         return int(index_exp)
 
-    async def export_index_phase(self, phase):
-        """import export"""
+    async def lifetime_energy_export_phase(self, phase):
+        """lifetime energy export"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"export_index_l1": 0, "export_index_l2": 1, "export_index_l3": 2}
+        phase_map = {"lifetime_energy_export_l1": 0, "lifetime_energy_export_l2": 1, "lifetime_energy_export_l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1088,8 +1088,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.seven_days_consumption(),
                 self.lifetime_production(),
                 self.lifetime_consumption(),
-                self.import_index(),
-                self.export_index(),
+                self.lifetime_energy_import(),
+                self.lifetime_energy_export(),
                 self.inverters_production(),
                 self.battery_storage(),
                 self.envoy_info(),
@@ -1105,8 +1105,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         print(f"seven_days_consumption:  {results[5]}")
         print(f"lifetime_production:     {results[6]}")
         print(f"lifetime_consumption:    {results[7]}")
-        print(f"index_import:            {results[8]}")
-        print(f"index_export:            {results[9]}")
+        print(f"energy_import:           {results[8]}")
+        print(f"energy_export:           {results[9]}")
         if "401" in str(data_results):
             print(
                 "inverters_production:    Unable to retrieve inverter data - Authentication failure"

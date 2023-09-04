@@ -106,21 +106,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         description.key
                     )
                 elif description.key.startswith("lifetime_production_"):
-                    data[
+                    data[description.key] = await envoy_reader.lifetime_production_phase(
                         description.key
-                    ] = await envoy_reader.lifetime_production_phase(description.key)
+                    )
                 elif description.key.startswith("lifetime_consumption_"):
-                    data[
+                    data[description.key] = await envoy_reader.lifetime_consumption_phase(
                         description.key
-                    ] = await envoy_reader.lifetime_consumption_phase(description.key)
-                elif description.key.startswith("import_index_"):
-                    data[
+                    )
+                elif description.key.startswith("lifetime_export_"):
+                    data[description.key] = await envoy_reader.lifetime_energy_export_phase(
                         description.key
-                    ] = await envoy_reader.import_index_phase(description.key)
-                elif description.key.startswith("export_index_"):
-                    data[
+                    )
+                elif description.key.startswith("lifetime_import_"):
+                    data[description.key] = await envoy_reader.lifetime_energy_import_phase(
                         description.key
-                    ] = await envoy_reader.export_index_phase(description.key)
+                    )
                     
             data["grid_status"] = await envoy_reader.grid_status()
             data["envoy_info"] = await envoy_reader.envoy_info()
