@@ -96,7 +96,7 @@ What data is available depends on how many current transformer clamps (CT) are i
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption over all phases.
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption for each individual phase named L1, L2 and L3.
 - Current power production for each connected inverter.
-- Energy Import and Export Index over all phases and for each phase individually from meters readings
+- Lifetime Energy Import and Export over all phases and for each phase individually from meters readings when consumption CT is installed in Load with Solar Production mode.
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 
@@ -137,17 +137,19 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
-|Index Import|sensor.Envoy_\<sn\>_index_import|Wh|4,5|
-|Index Export|sensor.Envoy_\<sn\>_index_export|Wh|4,5|
-|Index Import L\<n\>|sensor.Envoy_\<sn\>_index_import_L\<n\>|Wh|4,5|
-|Index Export L\<n\>|sensor.Envoy_\<sn\>_index_export_L\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Energy Import|sensor.Envoy_\<sn\>_lifetime_energy_import|Wh|4,5,7,8|
+|Envoy \<sn\> Lifetime Energy Export|sensor.Envoy_\<sn\>_lifetime_energy_export|Wh|4,5,7,8|
+|Envoy \<sn\> Lifetime Energy Import L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_import_L\<n\>|Wh|4,5,7,8|
+|Envoy \<sn\> Lifetime Energy Export L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_export_L\<n\>|Wh|4,5,7,8|
 
 1 Always zero for Envoy Metered without meters.  
 2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
 3 Not available on Legacy models and ENVOY Standard with recent firmware.  
 4 Only on Envoy metered with configured and connected meters.  
-5 L\<n\> L1,L2,L3, availability depends on which and how many meters are connected and configured.  
+5 L\<n\> L1,L2,L3, availability depends on which and how many phases are connected and configured.  
 6 Reportedly always zero on Envoy metered with Firmware D8.
+7 In V0.0.18 renamed to Lifetime Energy Export/Import from Index Export/Import in v0.0.17. Old Entities will show as unavailable.
+8 Only when consumption CT is installed in Load with Solar Production mode. In Load only mode values have no meaning.
 
 ## Inverter Sensors
 
@@ -207,3 +209,5 @@ When issues occur with this integration some items to check are:
   - Validate input, getdata returned RuntimeError: Could not get enlighten token, status: 403, <Response [403 Forbidden]>  : Make sure envoy serialnumber is correct and connected to your Enphase account
   - Validate input, getdata returned HTTPError: All connection attempts failed  : failure to connect to envoy.  : Validate if correct IP address of the Envoy is used
   - Fetched (1 of 2) in 0.0 sec from http://x.x.x.x/production.json?details=1: <Response [301 Moved Permanently]>: <html>  : Was 'use Enlighten' checked when using tokens or validate username/pw used for legacy devices.
+- Lifetime Export Import/Export shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
+  
