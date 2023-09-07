@@ -131,19 +131,19 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Today's Energy Consumption|sensor.Envoy_\<sn\>_todays_energy_consumption|Wh|4,5|
 |Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4,5|
 |Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4,5|
-|Envoy \<sn\> Lifetime Net Energy Consumption|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption|Wh|4,5|
+|Envoy \<sn\> Lifetime Net Energy Consumption|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption|Wh|4,5,7,8|
 |Grid Status |binary_sensor.grid_status|On/Off|3|
 |Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_L\<n\>|W|4,5|
 |Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_L\<n\>|Wh|4,5|
 |Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production L\<n\>|Wh|4,5|
 |Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5|
-|Envoy \<sn\> Lifetime Net Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_production_L\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Net Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_production_L\<n\>|Wh|4,5,7,8|
 |Envoy \<sn\> Current Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_power_consumption_L\<n\>|W|4,5|
 |Envoy \<sn\> Current Net Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_net_power_consumption_L\<n\>|W|4,5|
 |Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
-|Envoy \<sn\> Lifetime Net Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption_L\<n\>|Wh|4,5,6|
+|Envoy \<sn\> Lifetime Net Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption_L\<n\>|Wh|4,5,6,7,8|
 
 1 Always zero for Envoy Metered without meters.  
 2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
@@ -151,7 +151,7 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 4 Only on Envoy metered with configured and connected meters.  
 5 L\<n\> L1,L2,L3, availability depends on which and how many phases are connected and configured.  
 6 Reportedly always zero on Envoy metered with Firmware D8.
-7 In V0.0.18 renamed to Lifetime Energy Export/Import from Index Export/Import in v0.0.17. Old Entities will show as unavailable.
+7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Index Export/Import in v0.0.17. Old Entities will show as unavailable.
 8 Only when consumption CT is installed in Load with Solar Production mode. In Load only mode values have no meaning.
 
 ## Inverter Sensors
@@ -212,5 +212,5 @@ When issues occur with this integration some items to check are:
   - Validate input, getdata returned RuntimeError: Could not get enlighten token, status: 403, <Response [403 Forbidden]>  : Make sure envoy serialnumber is correct and connected to your Enphase account
   - Validate input, getdata returned HTTPError: All connection attempts failed  : failure to connect to envoy.  : Validate if correct IP address of the Envoy is used
   - Fetched (1 of 2) in 0.0 sec from http://x.x.x.x/production.json?details=1: <Response [301 Moved Permanently]>: <html>  : Was 'use Enlighten' checked when using tokens or validate username/pw used for legacy devices.
-- Lifetime Export Import/Export shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
+- Lifetime Net Energy Consumtion / Production shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
   

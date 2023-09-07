@@ -17,6 +17,11 @@ import httpx
 import xmltodict
 from envoy_utils.envoy_utils import EnvoyUtils
 
+#for testing only
+#import requests
+#import responses
+#from responses import GET
+
 #
 # Legacy parser is only used on ancient firmwares
 #
@@ -147,6 +152,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         fetch_timeout_seconds=30,
         fetch_holdoff_seconds=0,
         fetch_retries=1,
+        simulate_envoy_get=None,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower().replace('[','').replace(']','')
@@ -186,12 +192,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_meters_json_results = None
         self.info_refresh_buffer_seconds = info_refresh_buffer_seconds
         self.info_next_refresh_time = datetime.datetime.now()
+        self.meters_next_refresh_time = datetime.datetime.now()
         self._store = store
         self._store_data = {}
         self._store_update_pending = False
         self._fetch_timeout_seconds = fetch_timeout_seconds
         self._fetch_holdoff_seconds = fetch_holdoff_seconds
         self._fetch_retries = max(fetch_retries,1)
+        self._simulate_envoy_get = simulate_envoy_get
 
     @property
     def _token(self):
@@ -227,6 +235,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def _update(self):
         """Update the data."""
         if self.endpoint_type == ENVOY_MODEL_S:
+            await self._update_meters_endpoint()
             await self._update_from_pc_endpoint()
         if self.endpoint_type == ENVOY_MODEL_C or (
             self.endpoint_type == ENVOY_MODEL_S and not self.isProductionMeteringEnabled
@@ -237,11 +246,17 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             
         await self._update_info_endpoint()
 
+    async def _update_from_meters_reports_endpoint(self):
+        """Update from ivp/meters endpoint."""
+        if self.endpoint_type == ENVOY_MODEL_S:
+            #only touch meters reports if confirmed envoy model S, other type choke up on this request
+            _LOGGER.debug("Updating meters reports")
+            await self._update_endpoint(
+                "endpoint_meters_reports_json_results", ENDPOINT_URL_METERS_REPORTS
+            )
+
     async def _update_from_pc_endpoint(self):
         """Update from PC endpoint."""
-        await self._update_endpoint(
-            "endpoint_meters_reports_json_results", ENDPOINT_URL_METERS_REPORTS
-        )
         await self._update_endpoint(
             "endpoint_production_json_results", ENDPOINT_URL_PRODUCTION_JSON
         )
@@ -266,10 +281,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         )
 
     async def _update_info_endpoint(self):
-        """Update from info endpoint if next time expried."""
+        """Update from info endpoint if next time expired."""
         if self.info_next_refresh_time <= datetime.datetime.now():
             await self._update_endpoint("endpoint_info_results", ENDPOINT_URL_INFO_XML)
-            await self._update_endpoint("endpoint_meters_json_results", ENDPOINT_URL_METERS)
             self.info_next_refresh_time = datetime.datetime.now() + datetime.timedelta(
                 seconds=self.info_refresh_buffer_seconds
             )
@@ -285,6 +299,46 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.info_refresh_buffer_seconds,
             )
 
+    async def _update_meters_endpoint(self):
+        """Update from meters endpoint if next time expried."""
+        if self.meters_next_refresh_time <= datetime.datetime.now():
+            await self._update_endpoint("endpoint_meters_json_results", ENDPOINT_URL_METERS)
+
+            #some devices return [] for ivp/meters
+            if self.endpoint_meters_json_results and self.endpoint_meters_json_results.text != "[]":
+
+                self.isProductionMeteringEnabled = has_production_metering_setup(
+                    self.endpoint_meters_json_results.json()
+                )
+                self.isConsumptionMeteringEnabled = has_consumption_metering_setup(
+                    self.endpoint_meters_json_results.json()
+                )
+                self.net_consumption_meters_type = has_net_consumption_meters_type(
+                    self.endpoint_meters_json_results.json()
+                )
+                self.production_meters_phase_count = get_production_meters_phase_count(
+                    self.endpoint_meters_json_results.json()
+                )
+                self.consumption_meters_phase_count = get_consumption_meters_phase_count(
+                    self.endpoint_meters_json_results.json()
+                )
+                self.meters_next_refresh_time = datetime.datetime.now() + datetime.timedelta(
+                    seconds=self.info_refresh_buffer_seconds
+                )
+
+            _LOGGER.debug(
+                "Meters endpoint updated, set next update time: %s using interval: %s",
+                self.meters_next_refresh_time,
+                self.info_refresh_buffer_seconds,
+            )
+        else:
+            _LOGGER.debug(
+                "Meters endpoint next update time is: %s using interval: %s",
+                self.meters_next_refresh_time,
+                self.info_refresh_buffer_seconds,
+            )
+        await self._update_from_meters_reports_endpoint()
+
     async def _update_endpoint(self, attr, url):
         """Update a property from an endpoint."""
         formatted_url = url.format(self.https_flag, self.host)
@@ -295,6 +349,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _async_fetch_with_retry(self, url, **kwargs):
         """Retry 3 times to fetch the url if there is a transport error."""
+        # for testing only
+        # if self._simulate_envoy_get is not None:
+        #     #simulate get by reading response from file
+        #     response = await self._simulate_envoy(url, **kwargs)
+        #     if response:
+        #         return response
+        #     return None
+    
         for attempt in range(self._fetch_retries + 1):
             header = " <Blank Header> "
             if self._authorization_header:
@@ -503,11 +565,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             await self._update()
 
         _LOGGER.debug(
-            "Using Model: %s (HTTP%s, Production Metering enabled: %s, Consumption Metering enabled: %s, Get Inverters: %s)",
+            "Using Model: %s (HTTP%s, Production Metering: %s phases: %s, Consumption Metering: %s phases: %s, Net consumption CT: %s, Get Inverters: %s)",
             self.endpoint_type, 
             self.https_flag,
             self.isProductionMeteringEnabled,
+            self.production_meters_phase_count,
             self.isConsumptionMeteringEnabled,
+            self.consumption_meters_phase_count,
+            self.net_consumption_meters_type,
             self.get_inverters
         )
 
@@ -538,6 +603,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         # If a password was not given as an argument when instantiating
         # the EnvoyReader object than use the last six numbers of the serial
         # number as the password.  Otherwise use the password argument value.
+        _LOGGER.debug("Detect Model running")
         if self.password == "" and not self.serial_number_last_six:
             await self.get_serial_number()
 
@@ -567,24 +633,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.endpoint_production_json_results.json()
             )
         ):
-            self.isProductionMeteringEnabled = has_production_metering_setup(
-                self.endpoint_meters_json_results.json()
-            )
-            self.isConsumptionMeteringEnabled = has_consumption_metering_setup(
-                self.endpoint_meters_json_results.json()
-            )
-            self.net_consumption_meters_type = has_net_consumption_meters_type(
-                self.endpoint_meters_json_results.json()
-            )
-            self.production_meters_phase_count = get_production_meters_phase_count(
-                self.endpoint_meters_json_results.json()
-            )
-            self.consumption_meters_phase_count = get_consumption_meters_phase_count(
-                self.endpoint_meters_json_results.json()
-            )
+            _LOGGER.debug("Detect Model found production and consumption")
+             #only access meters endpoint if envoy metered, other type may choke up
+            self.endpoint_type = ENVOY_MODEL_S
+            
+            await self._update_meters_endpoint()
+
             if not self.isProductionMeteringEnabled:
                 await self._update_from_p_endpoint()
-            self.endpoint_type = ENVOY_MODEL_S
             return
 
         try:
@@ -1093,6 +1149,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         device_data["Using-FetchTimeOut"] = self._fetch_timeout_seconds
         device_data["Using-FetchHoldoff"] = self._fetch_holdoff_seconds
 
+        if self.endpoint_meters_json_results:
+            device_data["Endpoint-meters"] = self.endpoint_meters_json_results.text
+        else:
+            device_data["Endpoint-meters"] = self.endpoint_meters_json_results
         if self.endpoint_meters_reports_json_results:
             device_data["Endpoint-meters-reports"] = self.endpoint_meters_reports_json_results.text
         else:
@@ -1140,57 +1200,111 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return device_data
 
-    def run_in_console(self, dumpraw=False):
+    # async def _simulate_envoy(self, url,  **kwargs):
+    #     """Return simulated response from file in sub folder /sim/<name>"""
+    #     target = url.replace(self.host,"{}").rsplit('}', 1)[1]
+    #     envoysim = self._simulate_envoy_get
+    #     data = None
+    #     filepath = None
+
+    #     if target in ENDPOINT_URL_PRODUCTION_JSON:
+    #         filepath = "/production.json"
+    #     elif target in ENDPOINT_URL_PRODUCTION_V1:
+    #         filepath = "/api_v1_production.json"
+    #     elif target in ENDPOINT_URL_PRODUCTION_INVERTERS:
+    #         filepath = "/api_v1_production_inverters.json"
+    #     elif target in ENDPOINT_URL_PRODUCTION:
+    #         filepath = "/production.json"
+    #     elif target in ENDPOINT_URL_CHECK_JWT:
+    #         data = "<!DOCTYPE html><h2>Valid token.</h2>"
+    #     elif target in ENDPOINT_URL_ENSEMBLE_INVENTORY:
+    #         filepath = "/ivp_ensemble_inventory.json"
+    #     elif target in ENDPOINT_URL_HOME_JSON:
+    #         filepath = "/home.json"
+    #     elif target in ENDPOINT_URL_INFO_XML:
+    #         filepath = "/info.xml"
+    #     elif target in ENDPOINT_URL_METERS:
+    #         filepath = "/ivp_meters.json"
+    #     elif target in ENDPOINT_URL_METERS_REPORTS:
+    #         filepath = "/ivp_meters_reports.json"
+    #     else:
+    #         _LOGGER.debug("Envoy SIMULATION NO match found for %s",url)
+
+    #     if filepath:
+    #         with open( envoysim + filepath , 'r') as f:
+    #             data = f.read()
+    #             f.close()
+    #     if data:
+    #         #async with self.async_client as client:
+    #         _LOGGER.debug("Envoy SIMULATION for %s using %s%s",url,envoysim,filepath)
+
+    #         self.requestmock = responses.RequestsMock()  # creating a mock object
+    #         self.requestmock.start()  # activate
+    #         self.requestmock.add(GET, url=url, body=data)  # queue a response
+    #         response = requests.get(
+    #             url, headers=self._authorization_header, timeout=self._fetch_timeout_seconds
+    #         )
+    #     _LOGGER.debug("Envoy SIMULATION data %s: %s",response,response.text)
+
+    #     return response
+
+    def run_in_console(self, dumpraw=False,loopcount=1,waittime=1):
         """If running this module directly, print all the values in the console."""
-        print("Reading...")
         loop = asyncio.get_event_loop()
-        data_results = loop.run_until_complete(
-            asyncio.gather(self.getData(), return_exceptions=False)
-        )
+        for attempt in range(0,loopcount):
+            if attempt > 0:
+                print("Sleeping...")
+                time.sleep(waittime)
+            print("Reading...")
+            data_results = loop.run_until_complete(
+                asyncio.gather(self.getData(), return_exceptions=False)
+            )
 
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(
-            asyncio.gather(
-                self.production(),
-                self.consumption(),
-                self.net_consumption(),
-                self.daily_production(),
-                self.daily_consumption(),
-                self.seven_days_production(),
-                self.seven_days_consumption(),
-                self.lifetime_production(),
-                self.lifetime_net_production(),
-                self.lifetime_consumption(),
-                self.lifetime_net_consumption(),
-                self.inverters_production(),
-                self.battery_storage(),
-                self.envoy_info(),
-                return_exceptions=False,
+            loop = asyncio.get_event_loop()
+            results = loop.run_until_complete(
+                asyncio.gather(
+                    self.production(),
+                    self.consumption(),
+                    self.net_consumption(),
+                    self.daily_production(),
+                    self.daily_consumption(),
+                    self.seven_days_production(),
+                    self.seven_days_consumption(),
+                    self.lifetime_production(),
+                    self.lifetime_net_production(),
+                    self.lifetime_consumption(),
+                    self.lifetime_net_consumption(),
+                    self.battery_storage(),
+                    self.inverters_production(),
+                    self.envoy_info(),
+                    return_exceptions=False,
+                )
             )
-        )
 
-        print(f"production:               {results[0]}")
-        print(f"consumption:              {results[1]}")
-        print(f"net_consumption:          {results[2]}")
-        print(f"daily_production:         {results[3]}")
-        print(f"daily_consumption:        {results[4]}")
-        print(f"seven_days_production:    {results[5]}")
-        print(f"seven_days_consumption:   {results[6]}")
-        print(f"lifetime_production:      {results[7]}")
-        print(f"lifetime_net_production:  {results[8]}")
-        print(f"lifetime_consumption:     {results[9]}")
-        print(f"lifetime_net_consumption: {results[10]}")
-        if "401" in str(data_results):
-            print(
-                "inverters_production:    Unable to retrieve inverter data - Authentication failure"
-            )
-        elif results[10] is None:
-            print(
-                "inverters_production:    Inverter data not available for your Envoy device."
-            )
-        else:
-            print(f"inverters_production:     {results[11]}")
-        print(f"battery_storage:          {results[12]}")
+            print(f"production:               {results[0]}")
+            print(f"consumption:              {results[1]}")
+            print(f"net_consumption:          {results[2]}")
+            print(f"daily_production:         {results[3]}")
+            print(f"daily_consumption:        {results[4]}")
+            print(f"seven_days_production:    {results[5]}")
+            print(f"seven_days_consumption:   {results[6]}")
+            print(f"lifetime_production:      {results[7]}")
+            print(f"lifetime_net_production:  {results[8]}")
+            print(f"lifetime_consumption:     {results[9]}")
+            print(f"lifetime_net_consumption: {results[10]}")
+            print(f"battery_storage:          {results[11]}")
+            if "401" in str(data_results):
+                print(
+                    "inverters_production:    Unable to retrieve inverter data - Authentication failure"
+                )
+            elif results[12] is None:
+                print(
+                    "inverters_production:    Inverter data not available for your Envoy device."
+                )
+            else:
+                print(f"inverters_production:     {results[12]}")
+            if dumpraw:
+                print(f"envoy_info:              {json.dumps(results[13],indent=2)}")
 
 
 if __name__ == "__main__":
@@ -1238,6 +1352,25 @@ if __name__ == "__main__":
         help="Enable Debug log output",
         action='store_true'
     )
+    parser.add_argument(
+        "-n",
+        "--number",
+        dest="loopcount",
+        help="NUmber of loops to executet",
+    )
+    parser.add_argument(
+        "-e",
+        "--envoysim",
+        dest="envoysim",
+        help="Simulate Envoy response from this folder",
+    )
+    parser.add_argument(
+        "-w",
+        "--waittime",
+        dest="waittime",
+        help="TIme to wait between loops [sec]",
+    )
+
 
     args = parser.parse_args()
 
@@ -1300,11 +1433,26 @@ if __name__ == "__main__":
     if USERNAME == "":
         USERNAME = "envoy"
 
+    LOOPCOUNT = 1
+    if (args.loopcount is not None):
+        LOOPCOUNT = int(args.loopcount)
+    
+    ENVOYSIM = None
+    if (args.envoysim is not None):
+        ENVOYSIM = args.envoysim
+    
+    WAITTIME = 1
+    if (args.waittime is not None):
+        WAITTIME = int(args.waittime)
+ 
     _LOGGER.debug("Host %s",HOST)
     _LOGGER.debug("Username %s",USERNAME)
     _LOGGER.debug("Password specified %s",PASSWORD!="")
     _LOGGER.debug("serialnum %s",SERIALNUM)
     _LOGGER.debug("Secure %s",SECURE)
+    _LOGGER.debug("Loopcount %s",LOOPCOUNT)
+    _LOGGER.debug("Envoysim %s",ENVOYSIM)
+    _LOGGER.debug("waittime %s",WAITTIME)
 
     TESTREADER = EnvoyReader(
         HOST,
@@ -1315,7 +1463,8 @@ if __name__ == "__main__":
         inverters=True,
         enlighten_serial_num=SERIALNUM,
         https_flag=SECURE,
-        use_enlighten_owner_token=OWNERTOKEN
+        use_enlighten_owner_token=OWNERTOKEN,
+        simulate_envoy_get=ENVOYSIM,
     )
 
-    TESTREADER.run_in_console(args.rawdump)
+    TESTREADER.run_in_console(args.rawdump,LOOPCOUNT,WAITTIME)
