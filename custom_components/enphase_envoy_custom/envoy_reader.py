@@ -768,7 +768,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def production_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"production_l1": 0, "production_l2": 1, "production_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
 
         if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
             self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count):
@@ -809,7 +809,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def consumption_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"consumption_l1": 0, "consumption_l2": 1, "consumption_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
 
         """Only return data if Envoy supports Consumption"""
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and
@@ -825,7 +825,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def net_consumption_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"net_consumption_l1": 0, "net_consumption_l2": 1, "net_consumption_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
 
         """Only return data if Envoy supports Consumption"""
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type and
@@ -870,7 +870,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def daily_production_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"daily_production_l1": 0,"daily_production_l2": 1,"daily_production_l3": 2}
+        phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
             self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count):
@@ -899,7 +899,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def daily_consumption_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"daily_consumption_l1": 0,"daily_consumption_l2": 1,"daily_consumption_l3": 2}
+        phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         """Only return data if Envoy supports Consumption"""
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and
@@ -1000,7 +1000,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def lifetime_production_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"lifetime_production_l1": 0,"lifetime_production_l2": 1,"lifetime_production_l3": 2}
+        phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
             self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count):
@@ -1017,7 +1017,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def lifetime_net_production_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"lifetime_net_production_l1": 0,"lifetime_net_production_l2": 1,"lifetime_net_production_l3": 2}
+        phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type and
             self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
@@ -1056,7 +1056,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def lifetime_consumption_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"lifetime_consumption_l1": 0,"lifetime_consumption_l2": 1,"lifetime_consumption_l3": 2}
+        phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         """Only return data if Envoy supports Consumption"""
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and
@@ -1072,7 +1072,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def lifetime_net_consumption_phase(self, phase):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"lifetime_net_consumption_l1": 0,"lifetime_net_consumption_l2": 1,"lifetime_net_consumption_l3": 2}
+        phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         """Only return data if Envoy supports Consumption"""
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type and
@@ -1147,7 +1147,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """PF"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"pf_l1": 0, "pf_l2": 1, "pf_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1181,7 +1181,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """voltage"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"voltage_l1": 0, "voltage_l2": 1, "voltage_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1215,7 +1215,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """frequency"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"frequency_l1": 0, "frequency_l2": 1, "frequency_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1249,7 +1249,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """current_consumption"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"current_consumption_l1": 0, "current_consumption_l2": 1, "current_consumption_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None
@@ -1283,7 +1283,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """current_production"""
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
-        phase_map = {"current_production_l1": 0, "current_production_l2": 1, "current_production_l3": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
         
         if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
             return None

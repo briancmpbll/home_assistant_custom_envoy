@@ -89,65 +89,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )()
 
             for description in PHASE_SENSORS:
-                if description.key.startswith("production_"):
-                    data[description.key] = await envoy_reader.production_phase(
-                        description.key
-                    )
-                elif description.key.startswith("consumption_"):
-                    data[description.key] = await envoy_reader.consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("net_consumption_"):
-                    data[description.key] = await envoy_reader.net_consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("daily_production_"):
-                    data[description.key] = await envoy_reader.daily_production_phase(
-                        description.key
-                    )
-                elif description.key.startswith("daily_consumption_"):
-                    data[description.key] = await envoy_reader.daily_consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("lifetime_production_"):
-                    data[description.key] = await envoy_reader.lifetime_production_phase(
-                        description.key
-                    )
-                elif description.key.startswith("lifetime_net_production_"):
-                    data[description.key] = await envoy_reader.lifetime_net_production_phase(
-                        description.key
-                    )
-                elif description.key.startswith("lifetime_consumption_"):
-                    data[description.key] = await envoy_reader.lifetime_consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("lifetime_net_consumption_"):
-                    data[description.key] = await envoy_reader.lifetime_net_consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("pf_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.pf_phase(description.key)
-                elif description.key.startswith("voltage_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.voltage_phase(description.key)
-                elif description.key.startswith("frequency_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.frequency_phase(description.key)
-                #Verify
-                elif description.key.startswith("current_production_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.current_production_phase(description.key)
-                #verify
-                elif description.key.startswith("current_consumption_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.current_consumption_phase(description.key)
-                    
+                # if description.key.startswith("production_"):
+                #     data[description.key] = await envoy_reader.production_phase(
+                #         description.key
+                #     )
+                # else:
+                
+                #catchall for non-specified phase sensors
+                #get attributes for phase sensors based on key name
+                #Removes _L1, _L2 or _L3 from key to call _phase function
+                #Pass l1, l2 or l3 as parameter to _phase function
+                data[description.key] = await getattr(envoy_reader, description.key[:-3]+"_phase")( description.key[-2:].lower())
+ 
+                        
             data["grid_status"] = await envoy_reader.grid_status()
             data["envoy_info"] = await envoy_reader.envoy_info()
 
