@@ -95,9 +95,18 @@ What data is available depends on how many current transformer clamps (CT) are i
 
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption over all phases.
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption for each individual phase named L1, L2 and L3.
-- Current net power consumption and lifetime net energy production and consumption over all phases.
-- Current net power consumption and lifetime net energy production and consumption for each individual phase named L1, L2 and L3.
+- Current net power consumption and lifetime net energy production (export) and consumption (import) over all phases.
+- Current net power consumption and lifetime net energy production (export) and consumption (import) for each individual phase named L1, L2 and L3.
 - Current power production for each connected inverter.
+- Current power factor over all phases.
+- Current power factor for each individual phase named L1, L2 and L3.
+- Current voltage over all phases.
+- Current voltage for each individual phase named L1, L2 and L3.
+- Current frequency over all phases.
+- Current frequency for each individual phase named L1, L2 and L3.
+- Current Amps production and consumption over all phases.
+- Current Amps production and consumption for each individual phase named L1, L2 and L3.
+
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 

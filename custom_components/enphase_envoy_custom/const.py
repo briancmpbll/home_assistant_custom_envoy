@@ -8,11 +8,14 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
-    SensorStateClass,
+    SensorStateClass
+
 )
 from homeassistant.const import (
     UnitOfEnergy, 
     UnitOfPower, 
+    UnitOfElectricPotential,
+    UnitOfFrequency,
     Platform, 
     PERCENTAGE
 )
@@ -131,6 +134,40 @@ SENSORS = (
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY
+    ),
+    SensorEntityDescription(
+        key="pf",
+        name="Power Factor",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage",
+        name="Voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="frequency",
+        name="Frequency",
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        device_class=SensorDeviceClass.FREQUENCY,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="current_consumption",
+        name="Current Consumption",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="current_production",
+        name="Current Production",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -316,6 +353,7 @@ PHASE_SENSORS = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
+    
     SensorEntityDescription(
         key="lifetime_net_consumption_l3",
         name="Lifetime Net Energy Consumption L3",
@@ -323,6 +361,109 @@ PHASE_SENSORS = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
+    SensorEntityDescription(
+        key="pf_l1",
+        name="Power Factor L1",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="pf_l2",
+        name="Power Factor L2",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="pf_l3",
+        name="Power Factor L3",
+        device_class=SensorDeviceClass.POWER_FACTOR,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage_l1",
+        name="Voltage L1",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage_l2",
+        name="Voltage L2",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="voltage_l3",
+        name="Voltage L3",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="frequency_l1",
+        name="Frequency L1",
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        device_class=SensorDeviceClass.FREQUENCY,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="frequency_l2",
+        name="Frequency L2",
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        device_class=SensorDeviceClass.FREQUENCY,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="frequency_l3",
+        name="Frequency L3",
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        device_class=SensorDeviceClass.FREQUENCY,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="current_consumption_l1",
+        name="Current Consumption L1",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+     SensorEntityDescription(
+        key="current_consumption_l2",
+        name="Current Consumption L2",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+     SensorEntityDescription(
+        key="current_consumption_l3",
+        name="Current Consumption L3",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="current_production_l1",
+        name="Current Production L1",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+     SensorEntityDescription(
+        key="current_production_l2",
+        name="Current Consumption L2",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+     SensorEntityDescription(
+        key="current_production_l3",
+        name="Current Production L3",
+        native_unit_of_measurement="A",
+        device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
+    ),
+
 )
 
 BATTERY_ENERGY_DISCHARGED_SENSOR = SensorEntityDescription(
