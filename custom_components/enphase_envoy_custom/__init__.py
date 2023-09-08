@@ -89,17 +89,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )()
 
             for description in PHASE_SENSORS:
-                # if description.key.startswith("production_"):
-                #     data[description.key] = await envoy_reader.production_phase(
-                #         description.key
-                #     )
-                # else:
+                if description.key[:-2] in [
+                    "none_known_at_this_time_"
+                ]:
+                    # call phase function for these
+                    data[description.key] = await getattr(envoy_reader, description.key[:-3]+"_phase")( description.key[-2:].lower())
+
+                else:
                 
-                #catchall for non-specified phase sensors
-                #get attributes for phase sensors based on key name
-                #Removes _L1, _L2 or _L3 from key to call _phase function
-                #Pass l1, l2 or l3 as parameter to _phase function
-                data[description.key] = await getattr(envoy_reader, description.key[:-3]+"_phase")( description.key[-2:].lower())
+                    #catchall for non-specified phase sensors
+                    #get attributes for phase sensors based on key name
+                    #Removes _L1, _L2 or _L3 from key to call base non-phased function
+                    #Pass l1, l2 or l3 as parameter to _phase function
+                    data[description.key] = await getattr(envoy_reader, description.key[:-3])( description.key[-2:].lower())
  
                         
             data["grid_status"] = await envoy_reader.grid_status()

@@ -736,10 +736,39 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             + "support the requested metric."
         )
 
-    async def production(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
 
+    async def _meters_report_value(self,field,report="net-consumption",phase=None):
+        """Extract value from meters reports json if net-consumption meter is available"""
+        report_map = {"production": 0, "net-consumption": 1, "total-consumption": 2}
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
+        #meters reports is only available for ENVOY Metered with CT configured
+        if (self.endpoint_type == ENVOY_MODEL_S) and (
+            #net-consumption requires consumption CT installed is Solar power included mode
+            (report == "net-consumption" and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type)
+            # production data requires production CT intalled
+            or (report == "production" and self.isProductionMeteringEnabled)
+            #if at least consumption CT is installed total-consumption will be available even in Load only mode install
+            or (report == "total-consumption" and self.isConsumptionMeteringEnabled)
+        ):
+            if self.endpoint_meters_reports_json_results:
+                raw_json = self.endpoint_meters_reports_json_results.json()
+                if phase == None:
+                    jsondata = raw_json[report_map[report]]["cumulative"][field]
+                    return jsondata
+                if self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count:
+                    try:
+                        jsondata = raw_json[report_map[report]]["lines"][phase_map[phase]][field]
+                        return jsondata
+                    except (KeyError, IndexError):
+                        return None
+        return None
+
+    async def production(self,phase=None):
+        """Report System or Phase Power Production data from sources for various Envoy types"""
+        if phase is not None:
+            # if phase is specified return phase data rather then system data
+            return await self.production_phase(phase)
+        
         if self.endpoint_type == ENVOY_MODEL_S:
             if self.isProductionMeteringEnabled:
                 raw_json = self.endpoint_meters_reports_json_results.json()
@@ -766,81 +795,31 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         return int(production)
 
     async def production_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
+        """Report Phase Power Production data from meters report json"""
+        jsondata = await self._meters_report_value("currW",report="production",phase=phase)
+        if jsondata is None:
+            return self.message_consumption_not_available if phase is None else None
+        return int(jsondata)
 
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
-            self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(
-                    raw_json[0]["lines"][phase_map[phase]]["currW"]
-                )
-            except (KeyError, IndexError):
-                return None
+    async def consumption(self,phase=None):
+        """Report cumulative or phase Power consumption (to house) from consumption CT meters report"""
+        jsondata = await self._meters_report_value("currW",report="total-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_consumption_not_available if phase is None else None
+        return int(jsondata)
 
-        return None
+    async def net_consumption(self,phase=None):
+        """Report cumulative or phase Power consumption (to/from grid) from consumption CT meters report"""
+        jsondata = await self._meters_report_value("currW",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_consumption_not_available if phase is None else None
+        return int(jsondata)
 
-    async def consumption(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-
-        """Only return data if Envoy supports Consumption"""
-        if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            consumption = raw_json[2]["cumulative"]["currW"]
-            return int(consumption)
-
-        return self.message_consumption_not_available
-
-    async def net_consumption(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-
-        """Only return data if Envoy supports Consumption"""
-        if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type:
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            net_consumption = raw_json[1]["cumulative"]["currW"]
-            return int(net_consumption)
-
-        return self.message_consumption_not_available
-
-    async def consumption_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
-
-        """Only return data if Envoy supports Consumption"""
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and
-            self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(raw_json[2]["lines"][phase_map[phase]]["currW"])
-            except (KeyError, IndexError):
-                return None
-
-        return None
-
-    async def net_consumption_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
-
-        """Only return data if Envoy supports Consumption"""
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type and
-            self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(raw_json[1]["lines"][phase_map[phase]]["currW"])
-            except (KeyError, IndexError):
-                return None
-        
-        return None
-
-    async def daily_production(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+    async def daily_production(self,phase=None):
+        """Report System or Phase Daily energy Production data from sources for various Envoy types"""
+        if phase is not None:
+            # if phase is specified return phase data rather then system data
+            return await self.daily_production_phase(phase)
 
         if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled:
             raw_json = self.endpoint_production_json_results.json()
@@ -868,8 +847,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         return int(daily_production)
 
     async def daily_production_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+        """Report Phase Daily energy Production data from production json"""
         phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
@@ -884,10 +862,12 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return None
 
-    async def daily_consumption(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-
+    async def daily_consumption(self,phase=None):
+        """Report System or Phase Daily energy Consumption data from production json"""
+        if phase is not None:
+            # if phase is specified return phase data rather then system data
+            return await self.daily_consumption_phase(phase)
+ 
         """Only return data if Envoy supports Consumption"""
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
             raw_json = self.endpoint_production_json_results.json()
@@ -897,8 +877,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         return self.message_consumption_not_available
 
     async def daily_consumption_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+        """Report Phase Daily energy Consumption data from production json"""
         phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         """Only return data if Envoy supports Consumption"""
@@ -915,8 +894,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         return None
 
     async def seven_days_production(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+        """Report Last seven day energy production data from production json"""
 
         if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled:
             raw_json = self.endpoint_production_json_results.json()
@@ -944,8 +922,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         return int(seven_days_production)
 
     async def seven_days_consumption(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+        """Report Last seven day energy consumption data from production json"""
 
         """Only return data if Envoy supports Consumption"""
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
@@ -955,9 +932,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return self.message_consumption_not_available
 
-    async def lifetime_production(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+    async def lifetime_production(self,phase=None):
+        """Report system or Phase lifetime Energy production from sources for various Envoy types"""
+        if phase is not None:
+            # if phase is specified return phase data rather then system data
+            return await self.lifetime_production_phase(phase)
 
         if self.endpoint_type == ENVOY_MODEL_S:
             if self.isProductionMeteringEnabled:
@@ -986,105 +965,34 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 )
         return int(lifetime_production)
 
-    async def lifetime_net_production(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-
-        if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type:
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            lifetime_net_production = raw_json[1]["cumulative"]["whRcvdCum"]
-            return int(lifetime_net_production)
-
-        return self.message_production_not_available
-    
     async def lifetime_production_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0,"l2": 1,"l3": 2}
+        """Report Phase lifetime Energy production from meters repors json"""
+        jsondata = await self._meters_report_value("whDlvdCum",report="production",phase=phase)
+        if jsondata is None:
+            return self.message_production_not_available if phase is None else None
+        return int(jsondata)
 
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
-            self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(
-                    raw_json[0]["lines"][phase_map[phase]]["whDlvdCum"]
-                )
-            except (KeyError, IndexError):
-                return None
-
-        return None
-
-    async def lifetime_net_production_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0,"l2": 1,"l3": 2}
-
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type and
-            self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(raw_json[1]["lines"][phase_map[phase]]["whRcvdCum"])
-            except (KeyError, IndexError):
-                return None
-
-        return None
-
-    async def lifetime_consumption(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-
-        """Only return data if Envoy supports Consumption"""
-        if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            lifetime_consumption = raw_json[2]["cumulative"]["whDlvdCum"]
-            return int(lifetime_consumption)
-
-        return self.message_consumption_not_available
-
-    async def lifetime_net_consumption(self):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-
-        """Only return data if Envoy supports Consumption"""
-        if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type:
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            lifetime_net_consumption = raw_json[1]["cumulative"]["whDlvdCum"]
-            return int(lifetime_net_consumption)
-
-        return self.message_consumption_not_available
-
-    async def lifetime_consumption_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0,"l2": 1,"l3": 2}
-
-        """Only return data if Envoy supports Consumption"""
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and
-            self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(raw_json[2]["lines"][phase_map[phase]]["whDlvdCum"])
-            except (KeyError, IndexError):
-                return None
-
-        return None
-
-    async def lifetime_net_consumption_phase(self, phase):
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0,"l2": 1,"l3": 2}
-
-        """Only return data if Envoy supports Consumption"""
-        if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type and
-            self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
-            raw_json = self.endpoint_meters_reports_json_results.json()
-            try:
-                return int(raw_json[1]["lines"][phase_map[phase]]["whDlvdCum"])
-            except (KeyError, IndexError):
-                return None
-
-        return None
-
+    async def lifetime_net_production(self,phase=None):
+        """Report cumulative or phase lifetime net production (exported to grid) from consumption CT meters report"""
+        jsondata = await self._meters_report_value("whRcvdCum",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_consumption_not_available if phase is None else None
+        return int(jsondata)
+        
+    async def lifetime_consumption(self,phase=None):
+        """Report cumulative or phase lifetime total-consumption from consumption CT meters report"""
+        jsondata = await self._meters_report_value("whDlvdCum",report="total-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_consumption_not_available if phase is None else None
+        return int(jsondata)
+        
+    async def lifetime_net_consumption(self,phase=None):
+        """Report cumulative or phase lifetime net-consumption from consumption CT meters report"""
+        jsondata = await self._meters_report_value("whDlvdCum",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_consumption_not_available if phase is None else None
+        return int(jsondata)
+        
     async def inverters_production(self):
         """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
         """so that this method will only read data from stored variables"""
@@ -1131,177 +1039,41 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return raw_json["storage"][0]
 
-    async def pf(self):
-        """PF"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
+    async def pf(self,phase=None):
+        """Report cumulative or phase PowerFactor from consumption CT meters report"""
+        jsondata = await self._meters_report_value("pwrFactor",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_pf_not_available if phase is None else None
+        return float(str(jsondata))
         
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_pf_not_available
+    async def voltage(self,phase=None):
+        """Report cumulative or phase Voltage from consumption CT meters report"""
+        jsondata = await self._meters_report_value("rmsVoltage",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_voltage_not_available if phase is None else None
+        return float(str(jsondata))
         
-        raw_json = self.endpoint_meters_json_results.json()
-        pf = raw_json[1]['pwrFactor']
-        return float(pf)
+    async def frequency(self,phase=None):
+        """Report cumulative or phase Frequency from consumption CT meters report"""
+        jsondata = await self._meters_report_value("freqHz",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_frequency_not_available if phase is None else None
+        return float(str(jsondata))
 
-    async def pf_phase(self, phase):
-        """PF"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
+    async def current_consumption(self,phase=None):
+        """Report cumulative or phase rmsCurrent from consumption CT meters report"""
+        jsondata = await self._meters_report_value("rmsCurrent",report="net-consumption",phase=phase)
+        if jsondata is None:
+            return self.message_current_consumption_not_available if phase is None else None
+        return float(str(jsondata))
         
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
+    async def current_production(self,phase=None):
+        """Report cumulative or phase rmsCurrent from production CT meters report"""
+        jsondata = await self._meters_report_value("rmsCurrent",report="production",phase=phase)
+        if jsondata is None:
+            return self.message_current_production_not_available if phase is None else None
+        return float(str(jsondata))
         
-        raw_json = self.endpoint_meters_json_results.json()
-        if raw_json[1]["channels"][1]["voltage"] < 50:
-            return None
-        
-        try:
-            return float(
-                raw_json[1]["channels"][phase_map[phase]]["pwrFactor"]
-            )
-        except (KeyError, IndexError):
-            return None
-
-        return None
-
-    async def voltage(self):
-        """voltage"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_voltage_not_available
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        voltage = raw_json[1]['voltage']
-        return float(voltage)
-
-    async def voltage_phase(self, phase):
-        """voltage"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        if raw_json[1]["channels"][1]["voltage"] < 50:
-            return None
-        
-        try:
-            return float(
-                raw_json[1]["channels"][phase_map[phase]]["voltage"]
-            )
-        except (KeyError, IndexError):
-            return None
-
-        return None
-    
-    async def frequency(self):
-        """frequency"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_frequency_not_available
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        frequency = raw_json[1]['freq']
-        return float(frequency)
-
-    async def frequency_phase(self, phase):
-        """frequency"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        if raw_json[1]["channels"][1]["voltage"] < 50:
-            return None
-        
-        try:
-            return float(
-                raw_json[1]["channels"][phase_map[phase]]["freq"]
-            )
-        except (KeyError, IndexError):
-            return None
-
-        return None
-
-    async def current_consumption(self):
-        """current_consumption"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_current_consumption_not_available
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        current_consumption = raw_json[1]['current']
-        return float(current_consumption)
-
-    async def current_consumption_phase(self, phase):
-        """current_consumption"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        if raw_json[1]["channels"][1]["voltage"] < 50:
-            return None
-        
-        try:
-            return float(
-                raw_json[1]["channels"][phase_map[phase]]["current"]
-            )
-        except (KeyError, IndexError):
-            return None
-
-        return None
-
-    async def current_production(self):
-        """current_production"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return self.message_current_production_not_available
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        current_production = raw_json[0]['current']
-        return float(current_production)
-
-    async def current_production_phase(self, phase):
-        """current_production"""
-        """Running getData() beforehand will set self.enpoint_type and self.isDataRetrieved"""
-        """so that this method will only read data from stored variables"""
-        phase_map = {"l1": 0, "l2": 1, "l3": 2}
-        
-        if self.endpoint_type in [ENVOY_MODEL_C,ENVOY_MODEL_LEGACY]:
-            return None
-        
-        raw_json = self.endpoint_meters_json_results.json()
-        if raw_json[1]["channels"][1]["voltage"] < 50:
-            return None
-        
-        try:
-            return float(
-                raw_json[0]["channels"][phase_map[phase]]["current"]
-            )
-        except (KeyError, IndexError):
-            return None
-
-        return None
-
-
     async def grid_status(self):
         """Return grid status reported by Envoy"""
         if self.has_grid_status and self.endpoint_home_json_results is not None:
@@ -1388,6 +1160,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return device_data
 
+    # just for testing
     # async def _simulate_envoy(self, url,  **kwargs):
     #     """Return simulated response from file in sub folder /sim/<name>"""
     #     target = url.replace(self.host,"{}").rsplit('}', 1)[1]
@@ -1470,10 +1243,26 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.frequency(),
                     self.current_consumption(),
                     self.current_production(),
+                    #get values for phase L2
+                    self.production_phase("l2"),
+                    self.consumption("l2"),
+                    self.net_consumption("l2"),
+                    self.daily_production_phase("l2"),
+                    self.daily_consumption_phase("l2"),
+                    self.lifetime_production_phase("l2"),
+                    self.lifetime_net_production("l2"),
+                    self.lifetime_consumption("l2"),
+                    self.lifetime_net_consumption("l2"),
+                    self.pf("l2"),
+                    self.voltage("l2"),
+                    self.frequency("l2"),
+                    self.current_consumption("l2"),
+                    self.current_production("l2"),
                     return_exceptions=False,
                 )
             )
 
+            print("--System values--")
             print(f"production:               {results[0]}")
             print(f"consumption:              {results[1]}")
             print(f"net_consumption:          {results[2]}")
@@ -1491,6 +1280,21 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             print(f"frequency:                {results[16]}")
             print(f"current_consumption:      {results[17]}")
             print(f"current_production:       {results[18]}")
+            print("--Phase L2 values--")
+            print(f"production:               {results[19]}")
+            print(f"consumption:              {results[20]}")
+            print(f"net_consumption:          {results[21]}")
+            print(f"daily_production:         {results[22]}")
+            print(f"daily_consumption:        {results[23]}")
+            print(f"lifetime_production:      {results[24]}")
+            print(f"lifetime_net_production:  {results[25]}")
+            print(f"lifetime_consumption:     {results[26]}")
+            print(f"lifetime_net_consumption: {results[27]}")
+            print(f"pf:                       {results[28]}")
+            print(f"voltage:                  {results[29]}")
+            print(f"frequency:                {results[30]}")
+            print(f"current_consumption:      {results[31]}")
+            print(f"current_production:       {results[32]}")
             if "401" in str(data_results):
                 print(
                     "inverters_production:    Unable to retrieve inverter data - Authentication failure"
