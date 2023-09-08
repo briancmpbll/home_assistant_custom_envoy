@@ -89,7 +89,7 @@ This integration supports various models but as models have different features t
 
 ## IQ Gateway / ENVOY S standard metered
 
-What data is available depends on how many current transformer clamps (CT) are installed and what currents they measure. Both production and consumption clamps can be installed, each for up to 3 phases or multiple circuits on their own breaker in single phase setup.
+What data is available depends on how many current transformer clamps (CT) are installed and what currents they measure. Both production and consumption clamps can be installed, each for up to 3 phases or multiple circuits on their own breaker in single phase setup. The consumption clamps can be installed in 2 modes, 'Load with Solar'or 'Load only'. To measure net-consumption (energy import/export to the grid) it should be installedin Load with Solar mode. If in 'Load only' mode only total-consumption (to the house) can be reported.
 
 ### with connected current transformer clamps
 
@@ -106,7 +106,6 @@ What data is available depends on how many current transformer clamps (CT) are i
 - Current frequency for each individual phase named L1, L2 and L3.
 - Current Amps production and consumption over all phases.
 - Current Amps production and consumption for each individual phase named L1, L2 and L3.
-
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 
@@ -138,21 +137,34 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Current Power Consumption|sensor.Envoy_\<sn\>_current_power_consumption|W||
 |Envoy \<sn\> Current Net Power Consumption|sensor.Envoy_\<sn\>_current_net_power_consumption|W|4|
 |Envoy \<sn\> Today's Energy Consumption|sensor.Envoy_\<sn\>_todays_energy_consumption|Wh|4,5|
-|Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4,5|
-|Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4,5|
-|Envoy \<sn\> Lifetime Net Energy Consumption|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption|Wh|4,5,7,8|
+|Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4|
+|Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4|
+|Envoy \<sn\> Lifetime Net Energy Consumption|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption|Wh|4,7,8|
+|Envoy \<sn\> Power Factor|sensor.Envoy_\<sn\>_pf||4|
+|Envoy \<sn\> Voltage|sensor.Envoy_\<sn\>_voltage|V|4|
+|Envoy \<sn\> Frequency|sensor.Envoy_\<sn\>_frequency|Wh|4|
+|Envoy \<sn\> Current Consumption|sensor.Envoy_\<sn\>_current_consumption|A|4|
+|Envoy \<sn\> Current Production|sensor.Envoy_\<sn\>_current_production|A|4|
+||||
 |Grid Status |binary_sensor.grid_status|On/Off|3|
-|Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_L\<n\>|W|4,5|
-|Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_L\<n\>|Wh|4,5|
-|Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production L\<n\>|Wh|4,5|
-|Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5|
-|Envoy \<sn\> Lifetime Net Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_production_L\<n\>|Wh|4,5,7,8|
-|Envoy \<sn\> Current Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_power_consumption_L\<n\>|W|4,5|
-|Envoy \<sn\> Current Net Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_net_power_consumption_L\<n\>|W|4,5|
-|Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
+||||
+|Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_l\<n\>|W|4,5|
+|Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_l\<n\>|Wh|4,5|
+|Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production_l\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_l\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Net Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_production_l\<n\>|Wh|4,5,7,8|
+|Envoy \<sn\> Current Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_power_consumption_l\<n\>|W|4,5|
+|Envoy \<sn\> Current Net Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_net_power_consumption_l\<n\>|W|4,5|
+|Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_l\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
-|Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
-|Envoy \<sn\> Lifetime Net Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption_L\<n\>|Wh|4,5,6,7,8|
+|Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_l\<n\>|Wh|4,5,6|
+|Envoy \<sn\> Lifetime Net Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption_l\<n\>|Wh|4,5,6,7,8|
+|Envoy \<sn\> Power Factor L\<n\>|sensor.Envoy_\<sn\>_pf||4,5|
+|Envoy \<sn\> Voltage L\<n\>|sensor.Envoy_\<sn\>_voltage|V|4,5|
+|Envoy \<sn\> Frequency L\<n\>|sensor.Envoy_\<sn\>_frequency|Wh|4,5|
+|Envoy \<sn\> Current Consumption L\<n\>|sensor.Envoy_\<sn\>_current_consumption|A|4,5|
+|Envoy \<sn\> Current Production L\<n\>|sensor.Envoy_\<sn\>_current_production|A|4,5|
+|Envoy \<sn\> |sensor.Envoy_\<sn\>_|Wh|4,5|
 
 1 Always zero for Envoy Metered without meters.  
 2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
@@ -160,8 +172,8 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 4 Only on Envoy metered with configured and connected meters.  
 5 L\<n\> L1,L2,L3, availability depends on which and how many phases are connected and configured.  
 6 Reportedly always zero on Envoy metered with Firmware D8.
-7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Index Export/Import in v0.0.17. Old Entities will show as unavailable.
-8 Only when consumption CT is installed in Load with Solar Production mode. In Load only mode values have no meaning.
+7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.
+8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.
 
 ## Inverter Sensors
 
