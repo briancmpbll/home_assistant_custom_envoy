@@ -171,9 +171,9 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 3 Not available on Legacy models and ENVOY Standard with recent firmware.  
 4 Only on Envoy metered with configured and connected meters.  
 5 L\<n\> L1,L2,L3, availability depends on which and how many phases are connected and configured.  
-6 Reportedly always zero on Envoy metered with Firmware D8.
-7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.
-8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.
+6 Reportedly always zero on Envoy metered with Firmware D8.  
+7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.  
+8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.  
 
 ## Inverter Sensors
 
