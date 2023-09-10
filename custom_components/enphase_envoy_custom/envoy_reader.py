@@ -17,11 +17,6 @@ import httpx
 import xmltodict
 from envoy_utils.envoy_utils import EnvoyUtils
 
-#for testing only
-#import requests
-#import responses
-#from responses import GET
-
 #
 # Legacy parser is only used on ancient firmwares
 #
@@ -170,7 +165,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         fetch_timeout_seconds=30,
         fetch_holdoff_seconds=0,
         fetch_retries=1,
-        simulate_envoy_get=None,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower().replace('[','').replace(']','')
@@ -217,7 +211,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._fetch_timeout_seconds = fetch_timeout_seconds
         self._fetch_holdoff_seconds = fetch_holdoff_seconds
         self._fetch_retries = max(fetch_retries,1)
-        self._simulate_envoy_get = simulate_envoy_get
 
     @property
     def _token(self):
@@ -252,6 +245,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _update(self):
         """Update the data."""
+        _LOGGER.debug("_update running")
         if self.endpoint_type == ENVOY_MODEL_S:
             await self._update_meters_endpoint()
             await self._update_from_pc_endpoint()
@@ -366,14 +360,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def _async_fetch_with_retry(self, url, **kwargs):
         """Retry 3 times to fetch the url if there is a transport error."""
-        # for testing only
-        # if self._simulate_envoy_get is not None:
-        #     #simulate get by reading response from file
-        #     response = await self._simulate_envoy(url, **kwargs)
-        #     if response:
-        #         return response
-        #     return None
-    
         for attempt in range(self._fetch_retries + 1):
             header = " <Blank Header> "
             if self._authorization_header:
@@ -1160,55 +1146,6 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         return device_data
 
-    # just for testing
-    # async def _simulate_envoy(self, url,  **kwargs):
-    #     """Return simulated response from file in sub folder /sim/<name>"""
-    #     target = url.replace(self.host,"{}").rsplit('}', 1)[1]
-    #     envoysim = self._simulate_envoy_get
-    #     data = None
-    #     filepath = None
-
-    #     if target in ENDPOINT_URL_PRODUCTION_JSON:
-    #         filepath = "/production.json"
-    #     elif target in ENDPOINT_URL_PRODUCTION_V1:
-    #         filepath = "/api_v1_production.json"
-    #     elif target in ENDPOINT_URL_PRODUCTION_INVERTERS:
-    #         filepath = "/api_v1_production_inverters.json"
-    #     elif target in ENDPOINT_URL_PRODUCTION:
-    #         filepath = "/production.json"
-    #     elif target in ENDPOINT_URL_CHECK_JWT:
-    #         data = "<!DOCTYPE html><h2>Valid token.</h2>"
-    #     elif target in ENDPOINT_URL_ENSEMBLE_INVENTORY:
-    #         filepath = "/ivp_ensemble_inventory.json"
-    #     elif target in ENDPOINT_URL_HOME_JSON:
-    #         filepath = "/home.json"
-    #     elif target in ENDPOINT_URL_INFO_XML:
-    #         filepath = "/info.xml"
-    #     elif target in ENDPOINT_URL_METERS:
-    #         filepath = "/ivp_meters.json"
-    #     elif target in ENDPOINT_URL_METERS_REPORTS:
-    #         filepath = "/ivp_meters_reports.json"
-    #     else:
-    #         _LOGGER.debug("Envoy SIMULATION NO match found for %s",url)
-
-    #     if filepath:
-    #         with open( envoysim + filepath , 'r') as f:
-    #             data = f.read()
-    #             f.close()
-    #     if data:
-    #         #async with self.async_client as client:
-    #         _LOGGER.debug("Envoy SIMULATION for %s using %s%s",url,envoysim,filepath)
-
-    #         self.requestmock = responses.RequestsMock()  # creating a mock object
-    #         self.requestmock.start()  # activate
-    #         self.requestmock.add(GET, url=url, body=data)  # queue a response
-    #         response = requests.get(
-    #             url, headers=self._authorization_header, timeout=self._fetch_timeout_seconds
-    #         )
-    #     _LOGGER.debug("Envoy SIMULATION data %s: %s",response,response.text)
-
-    #     return response
-
     def run_in_console(self, dumpraw=False,loopcount=1,waittime=1):
         """If running this module directly, print all the values in the console."""
         loop = asyncio.get_event_loop()
@@ -1361,12 +1298,6 @@ if __name__ == "__main__":
         help="NUmber of loops to executet",
     )
     parser.add_argument(
-        "-e",
-        "--envoysim",
-        dest="envoysim",
-        help="Simulate Envoy response from this folder",
-    )
-    parser.add_argument(
         "-w",
         "--waittime",
         dest="waittime",
@@ -1439,10 +1370,6 @@ if __name__ == "__main__":
     if (args.loopcount is not None):
         LOOPCOUNT = int(args.loopcount)
     
-    ENVOYSIM = None
-    if (args.envoysim is not None):
-        ENVOYSIM = args.envoysim
-    
     WAITTIME = 1
     if (args.waittime is not None):
         WAITTIME = int(args.waittime)
@@ -1453,7 +1380,6 @@ if __name__ == "__main__":
     _LOGGER.debug("serialnum %s",SERIALNUM)
     _LOGGER.debug("Secure %s",SECURE)
     _LOGGER.debug("Loopcount %s",LOOPCOUNT)
-    _LOGGER.debug("Envoysim %s",ENVOYSIM)
     _LOGGER.debug("waittime %s",WAITTIME)
 
     TESTREADER = EnvoyReader(
@@ -1466,7 +1392,6 @@ if __name__ == "__main__":
         enlighten_serial_num=SERIALNUM,
         https_flag=SECURE,
         use_enlighten_owner_token=OWNERTOKEN,
-        simulate_envoy_get=ENVOYSIM,
     )
 
     TESTREADER.run_in_console(args.rawdump,LOOPCOUNT,WAITTIME)
