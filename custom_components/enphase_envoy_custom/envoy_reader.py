@@ -731,7 +731,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         if (self.endpoint_type == ENVOY_MODEL_S) and (
             #net-consumption requires consumption CT installed is Solar power included mode
             (report == "net-consumption" and self.isConsumptionMeteringEnabled and self.net_consumption_meters_type)
-            # production data requires production CT intalled
+            # production data requires production CT installed
             or (report == "production" and self.isProductionMeteringEnabled)
             #if at least consumption CT is installed total-consumption will be available even in Load only mode install
             or (report == "total-consumption" and self.isConsumptionMeteringEnabled)
@@ -741,7 +741,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 if phase == None:
                     jsondata = raw_json[report_map[report]]["cumulative"][field]
                     return jsondata
-                if self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count:
+                
+                #if production data requested and multiple phases are configured and requested phase is in count of configured phases return data or
+                #if consumption data requested and multiple phases are configured and requested phase is in count of configured phases return date
+                if ((self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count and report=="production")
+                 or (self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count and report!="production")):
                     try:
                         jsondata = raw_json[report_map[report]]["lines"][phase_map[phase]][field]
                         return jsondata
