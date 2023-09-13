@@ -97,15 +97,16 @@ What data is available depends on how many current transformer clamps (CT) are i
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption for each individual phase named L1, L2 and L3.
 - Current net power consumption and lifetime net energy production (export) and consumption (import) over all phases.
 - Current net power consumption and lifetime net energy production (export) and consumption (import) for each individual phase named L1, L2 and L3.
-- Current power production for each connected inverter.
-- Current power factor over all phases.
-- Current power factor for each individual phase named L1, L2 and L3.
-- Current voltage over all phases.
-- Current voltage for each individual phase named L1, L2 and L3.
-- Current frequency over all phases.
-- Current frequency for each individual phase named L1, L2 and L3.
-- Current Amps production and consumption over all phases.
-- Current Amps production and consumption for each individual phase named L1, L2 and L3.
+- Next entities are disabled by default and need to be enabled in the entities configuration screen
+  - Power production for each connected inverter.
+  - Power factor over all phases.
+  - Power factor for each individual phase named L1, L2 and L3.
+  - Voltage over all phases. (Be aware this is the summed Voltage of all measured phases!)
+  - Voltage for each individual phase named L1, L2 and L3.
+  - Frequency over all phases.
+  - Frequency for each individual phase named L1, L2 and L3.
+  - Production and consumption Current (amps) over all phases.
+  - Production and consumption Current (amps) for each individual phase named L1, L2 and L3.
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 
@@ -140,11 +141,11 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4|
 |Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4|
 |Envoy \<sn\> Lifetime Net Energy Consumption|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption|Wh|4,7,8|
-|Envoy \<sn\> Power Factor|sensor.Envoy_\<sn\>_pf||4|
-|Envoy \<sn\> Voltage|sensor.Envoy_\<sn\>_voltage|V|4|
-|Envoy \<sn\> Frequency|sensor.Envoy_\<sn\>_frequency|Wh|4|
-|Envoy \<sn\> Current Consumption|sensor.Envoy_\<sn\>_current_consumption|A|4|
-|Envoy \<sn\> Current Production|sensor.Envoy_\<sn\>_current_production|A|4|
+|Envoy \<sn\> Power Factor|sensor.Envoy_\<sn\>_pf||4,9|
+|Envoy \<sn\> Voltage|sensor.Envoy_\<sn\>_voltage|V|4,9|
+|Envoy \<sn\> Frequency|sensor.Envoy_\<sn\>_frequency|Wh|4,9|
+|Envoy \<sn\> Consumption Current|sensor.Envoy_\<sn\>_consumption_Current|A|4,9|
+|Envoy \<sn\> Production Current|sensor.Envoy_\<sn\>_production_Current|A|4,9|
 ||||
 |Grid Status |binary_sensor.grid_status|On/Off|3|
 ||||
@@ -159,11 +160,11 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_l\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Lifetime Net Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption_l\<n\>|Wh|4,5,6,7,8|
-|Envoy \<sn\> Power Factor L\<n\>|sensor.Envoy_\<sn\>_pf||4,5|
-|Envoy \<sn\> Voltage L\<n\>|sensor.Envoy_\<sn\>_voltage|V|4,5|
-|Envoy \<sn\> Frequency L\<n\>|sensor.Envoy_\<sn\>_frequency|Wh|4,5|
-|Envoy \<sn\> Current Consumption L\<n\>|sensor.Envoy_\<sn\>_current_consumption|A|4,5|
-|Envoy \<sn\> Current Production L\<n\>|sensor.Envoy_\<sn\>_current_production|A|4,5|
+|Envoy \<sn\> Power Factor L\<n\>|sensor.Envoy_\<sn\>_pf||4,5,9|
+|Envoy \<sn\> Voltage L\<n\>|sensor.Envoy_\<sn\>_voltage|V|4,5,9|
+|Envoy \<sn\> Frequency L\<n\>|sensor.Envoy_\<sn\>_frequency|Wh|4,5,9|
+|Envoy \<sn\> Consumption Current L\<n\>|sensor.Envoy_\<sn\>_consumption_Current|A|4,5,9|
+|Envoy \<sn\> Production Current L\<n\>|sensor.Envoy_\<sn\>_production_Current|A|4,5,9|
 |Envoy \<sn\> |sensor.Envoy_\<sn\>_|Wh|4,5|
 
 1 Always zero for Envoy Metered without meters.  
@@ -174,6 +175,7 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 6 Reportedly always zero on Envoy metered with Firmware D8.  
 7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.  
 8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.  
+9 Disabled by default and must be enabled in the entities configuration screen
 
 ## Inverter Sensors
 

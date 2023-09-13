@@ -1046,14 +1046,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return self.message_frequency_not_available if phase is None else None
         return float(str(jsondata))
 
-    async def current_consumption(self,phase=None):
+    async def consumption_Current(self,phase=None):
         """Report cumulative or phase rmsCurrent from consumption CT meters report"""
         jsondata = await self._meters_report_value("rmsCurrent",report="net-consumption",phase=phase)
         if jsondata is None:
             return self.message_current_consumption_not_available if phase is None else None
         return float(str(jsondata))
         
-    async def current_production(self,phase=None):
+    async def production_Current(self,phase=None):
         """Report cumulative or phase rmsCurrent from production CT meters report"""
         jsondata = await self._meters_report_value("rmsCurrent",report="production",phase=phase)
         if jsondata is None:
