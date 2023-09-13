@@ -593,10 +593,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             response = await self._async_fetch_with_retry(
                 inverters_url, auth=inverters_auth
             )
-        if response.status_code == 401:
+        if response.status_code in [401,404]:
             if self.endpoint_type in [ENVOY_MODEL_C, ENVOY_MODEL_LEGACY]:
                 self.get_inverters = False
-                _LOGGER.debug("Error 401 in Getdata for getting invertors, disabling inverters")
+                _LOGGER.debug("Error %s in Getdata for getting invertors, disabling inverters",response.status_code)
+                return
             response.raise_for_status()
         self.endpoint_production_inverters = response
         return
