@@ -70,6 +70,11 @@ Optionally a wait time can be inserted between 2 retries. Only change this in sp
 ### Overall Timeout
 When getting data from the Envoy, an overall timer is started. If not all data is returned when the timer expires, the data collection is considered timed-out and all data is set to unavailable. Intent is catch all if data collection is never returning. Do not change this setting, unless Timeout for single envoy page or number of retries needs to be increased. In that case increase this overall timer value as well to prevent it to timeout the data collection. To get a feel for needed time, enable the debug mode on the envoy and inspect timing of a full collection cycle.
 
+### Do not use production json
+This switch, intended for use with the Envoy-s Metered only, will tell the integration not to use production endpoint on the Envoy. The production endpoint is a relatively slow endpoint on the Envoy and reportedly crashes or restarts at times resulting in timeouts.  
+
+The Envoy-s Metered (only) has other, faster endpoints that provide a subset of what production endpoint offers. This subset is lacking the daily total and last 7 day total values which are only provided by the production endpoint. If you are more interested in faster updates from the CT clamps and have less interest in the Daily total or last 7 day total then this may be an option to consider. The values for today total and last 7 day total will show as unavailable. The values for production and consumption CT clamps will update with every collection cycle. The values for the inverters will continue to update every 5 minutes as before.
+
 # Firmware and it's impact
 
 Enphase model offering differs in various countries as does firmware versions and releases. Not all firmware is released in all countries and as a result firmware versions may differ largely in time. Enphase does push new firmware to the IQ Gateway / Envoy, 'not necessarily letting the home owner know'. In the past this has broken this integration as API details and change information is limited available. See the [Enphase documentation website](https://enphase.com/installers/resources/documentation/communication) for information available.

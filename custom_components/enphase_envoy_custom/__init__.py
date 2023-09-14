@@ -54,6 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         fetch_retries=options.get("data_fetch_retry_count", FETCH_RETRIES),
         fetch_timeout_seconds=options.get("data_fetch_timeout_seconds", FETCH_TIMEOUT_SECONDS),
         fetch_holdoff_seconds=options.get("data_fetch_holdoff_seconds", FETCH_HOLDOFF_SECONDS),
+        do_not_use_production_json=options.get("do_not_use_production_json",False),
     )
     await envoy_reader._sync_store()
 

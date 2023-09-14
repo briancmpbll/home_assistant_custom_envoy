@@ -165,6 +165,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         fetch_timeout_seconds=30,
         fetch_holdoff_seconds=0,
         fetch_retries=1,
+        do_not_use_production_json=False,
     ):
         """Init the EnvoyReader."""
         self.host = host.lower().replace('[','').replace(']','')
@@ -211,6 +212,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self._fetch_timeout_seconds = fetch_timeout_seconds
         self._fetch_holdoff_seconds = fetch_holdoff_seconds
         self._fetch_retries = max(fetch_retries,1)
+        self._do_not_use_production_json=do_not_use_production_json
 
     @property
     def _token(self):
@@ -266,11 +268,12 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 "endpoint_meters_reports_json_results", ENDPOINT_URL_METERS_REPORTS
             )
 
-    async def _update_from_pc_endpoint(self):
+    async def _update_from_pc_endpoint(self,detectmode=False):
         """Update from PC endpoint."""
-        await self._update_endpoint(
-            "endpoint_production_json_results", ENDPOINT_URL_PRODUCTION_JSON
-        )
+        if not self._do_not_use_production_json or detectmode:
+            await self._update_endpoint(
+                "endpoint_production_json_results", ENDPOINT_URL_PRODUCTION_JSON
+            )
         await self._update_endpoint(
             "endpoint_ensemble_json_results", ENDPOINT_URL_ENSEMBLE_INVENTORY
         )
@@ -612,7 +615,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             await self.get_serial_number()
 
         try:
-            await self._update_from_pc_endpoint()
+            await self._update_from_pc_endpoint(detectmode=True)
         except httpx.HTTPError:
             pass
 
@@ -813,6 +816,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             return await self.daily_production_phase(phase)
 
         if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled:
+            if self._do_not_use_production_json:
+                return self.message_production_not_available
             raw_json = self.endpoint_production_json_results.json()
             daily_production = raw_json["production"][1]["whToday"]
         elif self.endpoint_type == ENVOY_MODEL_C or (
@@ -842,7 +847,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         phase_map = {"l1": 0,"l2": 1,"l3": 2}
 
         if (self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled and
-            self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count):
+            self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count
+            and not self._do_not_use_production_json):
             raw_json = self.endpoint_production_json_results.json()
             try:
                 return int(
@@ -861,6 +867,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
  
         """Only return data if Envoy supports Consumption"""
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
+            if self._do_not_use_production_json:
+                return self.message_consumption_not_available
             raw_json = self.endpoint_production_json_results.json()
             daily_consumption = raw_json["consumption"][0]["whToday"]
             return int(daily_consumption)
@@ -874,6 +882,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """Only return data if Envoy supports Consumption"""
         if (self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled and
             self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count):
+            if self._do_not_use_production_json:
+                return None
             raw_json = self.endpoint_production_json_results.json()
             try:
                 return int(
@@ -888,6 +898,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """Report Last seven day energy production data from production json"""
 
         if self.endpoint_type == ENVOY_MODEL_S and self.isProductionMeteringEnabled:
+            if self._do_not_use_production_json:
+                return self.message_production_not_available
             raw_json = self.endpoint_production_json_results.json()
             seven_days_production = raw_json["production"][1]["whLastSevenDays"]
         elif self.endpoint_type == ENVOY_MODEL_C or (
@@ -917,6 +929,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
         """Only return data if Envoy supports Consumption"""
         if self.endpoint_type == ENVOY_MODEL_S and self.isConsumptionMeteringEnabled:
+            if self._do_not_use_production_json:
+                return self.message_production_not_available    
             raw_json = self.endpoint_production_json_results.json()
             seven_days_consumption = raw_json["consumption"][0]["whLastSevenDays"]
             return int(seven_days_consumption)
@@ -1068,7 +1082,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
     async def grid_status(self):
         """Return grid status reported by Envoy"""
         if self.has_grid_status and self.endpoint_home_json_results is not None:
-            if self.endpoint_production_json_results.status_code == 200:
+            if self.endpoint_home_json_results.status_code == 200:
                 home_json = self.endpoint_home_json_results.json()
                 if ("enpower" in home_json.keys() and "grid_status" in home_json["enpower"].keys()):
                     return home_json["enpower"]["grid_status"]
