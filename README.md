@@ -70,7 +70,7 @@ Optionally a wait time can be inserted between 2 retries. Only change this in sp
 ### Overall Timeout
 When getting data from the Envoy, an overall timer is started. If not all data is returned when the timer expires, the data collection is considered timed-out and all data is set to unavailable. Intent is catch all if data collection is never returning. Do not change this setting, unless Timeout for single envoy page or number of retries needs to be increased. In that case increase this overall timer value as well to prevent it to timeout the data collection. To get a feel for needed time, enable the debug mode on the envoy and inspect timing of a full collection cycle.
 
-# Firmware and it's impact
+# Firmware and its impact
 
 Enphase model offering differs in various countries as does firmware versions and releases. Not all firmware is released in all countries and as a result firmware versions may differ largely in time. Enphase does push new firmware to the IQ Gateway / Envoy, 'not necessarily letting the home owner know'. In the past this has broken this integration as API details and change information is limited available. See the [Enphase documentation website](https://enphase.com/installers/resources/documentation/communication) for information available.
 
