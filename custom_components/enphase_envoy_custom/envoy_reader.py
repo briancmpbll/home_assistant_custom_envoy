@@ -131,6 +131,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.battery_power = 0
         self.grid_power = 0
         self.pv_power = 0
+        self.voltage = None
 
     @property
     def async_client(self):
@@ -547,6 +548,16 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 raise RuntimeError("No match for production, check REGEX  " + text)
         self.pv_power = int(production)
         return int(production)
+
+    async def rmsvoltage(self):
+        if self.endpoint_type == ENVOY_MODEL_S:
+            raw_json = self.endpoint_production_json_results.json()
+            if raw_json["production"][1]["type"] == "eim":
+                readvoltage = raw_json["production"][1]["rmsVoltage"]
+            else:
+                raise RuntimeError("No match for voltage, check REGEX  " + text)
+        self.voltage = int(readvoltage)
+        return int(readvoltage)
     
     async def grid_export(self):
         if self.endpoint_type == ENVOY_MODEL_S:

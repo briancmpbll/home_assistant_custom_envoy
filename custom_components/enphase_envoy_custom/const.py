@@ -10,7 +10,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform, PERCENTAGE
+from homeassistant.const import ENERGY_WATT_HOUR, POWER_WATT, Platform, PERCENTAGE, ELECTRIC_POTENTIAL_VOLT
 
 DOMAIN = "enphase_envoy"
 
@@ -133,6 +133,13 @@ SENSORS = (
         native_unit_of_measurement=ENERGY_WATT_HOUR,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.ENERGY
+    ),
+    SensorEntityDescription(
+        key="rmsvoltage",
+        name="Inverter Voltage",
+        native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.VOLTAGE
     ),
 )
 
