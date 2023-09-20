@@ -80,7 +80,8 @@ The Envoy-s Metered (only) has other, faster endpoints that provide a subset of 
 
 ## Disabled entities
 The integration comes with some entities disabled by default. These only apply when using metered Envoy with CT clamps. If desired enable these by opening the HA entities window in the settings menu. Remove the filter for not shown entities by pushing the `clear` button. Then enter disabled or enphase in the search filter to find the disabled entities. Use the selector box to select the ones to enable and use the `enable selected` button to enable them.
-# Firmware and it's impact
+
+# Firmware and its impact
 
 Enphase model offering differs in various countries as does firmware versions and releases. Not all firmware is released in all countries and as a result firmware versions may differ largely in time. Enphase does push new firmware to the IQ Gateway / Envoy, 'not necessarily letting the home owner know'. In the past this has broken this integration as API details and change information is limited available. See the [Enphase documentation website](https://enphase.com/installers/resources/documentation/communication) for information available.
 
@@ -248,4 +249,3 @@ When issues occur with this integration some items to check are:
   - Validate input, getdata returned HTTPError: All connection attempts failed  : failure to connect to envoy.  : Validate if correct IP address of the Envoy is used
   - Fetched (1 of 2) in 0.0 sec from http://x.x.x.x/production.json?details=1: <Response [301 Moved Permanently]>: <html>  : Was 'use Enlighten' checked when using tokens or validate username/pw used for legacy devices.
 - Lifetime Net Energy Consumption / Production shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
-  
