@@ -11,7 +11,10 @@ Works with older models that only have (some) production metrics (ie. Envoy-C R 
 1. Install [HACS](https://hacs.xyz/) if you haven't already
 2. Add this repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories) in HACS
 4. Restart home assistant
-5. Add the integration through the home assistant configuration flow
+5. Add the integration through the home assistant configuration flow, [specify settings as needed](#initial-configuration-details)
+7. The integration has some run-time configuration options, [set these as desired](#runtime-configuration) after startup.
+8. The integration has some hidden entities, [enable these](#disabled-entities) to use these.
+
 
 # Usage
 
@@ -75,6 +78,8 @@ This switch, intended for use with the Envoy-s Metered only, will tell the integ
 
 The Envoy-s Metered (only) has other, faster endpoints that provide a subset of what production endpoint offers. This subset is lacking the daily total and last 7 day total values which are only provided by the production endpoint. If you are more interested in faster updates from the CT clamps and have less interest in the Daily total or last 7 day total then this may be an option to consider. The values for today total and last 7 day total will show as unavailable. The values for production and consumption CT clamps will update with every collection cycle. The values for the inverters will continue to update every 5 minutes as before.
 
+## Disabled entities
+The integration comes with some entities disabled by default. These only apply when using metered Envoy with CT clamps. If desired enable these by opening the HA entities window in the settings menu. Remove the filter for not shown entities by pushing the `clear` button. Then enter disabled or enphase in the search filter to find the disabled entities. Use the selector box to select the ones to enable and use the `enable selected` button to enable them.
 # Firmware and it's impact
 
 Enphase model offering differs in various countries as does firmware versions and releases. Not all firmware is released in all countries and as a result firmware versions may differ largely in time. Enphase does push new firmware to the IQ Gateway / Envoy, 'not necessarily letting the home owner know'. In the past this has broken this integration as API details and change information is limited available. See the [Enphase documentation website](https://enphase.com/installers/resources/documentation/communication) for information available.
@@ -122,6 +127,8 @@ The current firmware (D7.6.175 and probably some other right before and after it
 - Current power production and lifetime energy production. Today's and last 7 day energy production reportedly are both solid 0.
 - Lifetime Energy production reportedly resets to zero roughly every 1.19 MWh.
 - Current power production for each connected inverter.
+
+**Note** - When adding (or removing) CT clamps after use witouth CT clamps this will cause (huge) step changes/spikes in life time values when CT readings are now from the CT clamps (or longer available) and the wrapping value is no longer/now used.  
 
 # Device and Entities
 
@@ -180,7 +187,7 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 6 Reportedly always zero on Envoy metered with Firmware D8.  
 7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.  
 8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.  
-9 Disabled by default and must be enabled in the entities configuration screen
+9 Disabled by default and must be enabled in the entities configuration screen. These are values from the consumption CT.
 
 ## Inverter Sensors
 
@@ -192,7 +199,7 @@ For each inverter a sensor for current power production is created.
 
 1: Not available on Legacy models
 
-**Note** the entity 'Last Updated' for each inverter is currently not provided. 
+**Note** the entity 'Last Updated' for each inverter is currently not provided.  
 
 **Note** As can be noted the Envoy serial number is part of the inverter sensor id and name. Internally the unique_id for it is the inverter serial number. When changing your setup by moving inverters to a new/different Envoy it will require some preparation/research how this will work out. (Statistics (history) is stored by sensor id)
 
@@ -240,5 +247,5 @@ When issues occur with this integration some items to check are:
   - Validate input, getdata returned RuntimeError: Could not get enlighten token, status: 403, <Response [403 Forbidden]>  : Make sure envoy serialnumber is correct and connected to your Enphase account
   - Validate input, getdata returned HTTPError: All connection attempts failed  : failure to connect to envoy.  : Validate if correct IP address of the Envoy is used
   - Fetched (1 of 2) in 0.0 sec from http://x.x.x.x/production.json?details=1: <Response [301 Moved Permanently]>: <html>  : Was 'use Enlighten' checked when using tokens or validate username/pw used for legacy devices.
-- Lifetime Net Energy Consumtion / Production shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
+- Lifetime Net Energy Consumption / Production shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
   
