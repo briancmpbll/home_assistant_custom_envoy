@@ -1,6 +1,6 @@
 {
   "domain": "enphase_envoy",
-  "name": "Enphase Envoy (DEV)",
+  "name": "Enphase Envoy (DEV-TEST)",
   "documentation": "https://github.com/briancmpbll/home_assistant_custom_envoy#readme",
   "requirements": [
     "pyjwt",
@@ -11,5 +11,5 @@
   "codeowners": ["@briancmpbll"],
   "config_flow": true,
   "iot_class": "local_polling",
-  "version": "0.0.18"
+  "version": "0.0.19-BETA-1"
 }
