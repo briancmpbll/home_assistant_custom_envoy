@@ -22,5 +22,24 @@
                 "description": "- Voor firmware D7.0.0 en hoger controleer of voer Host IP adres, Enphase website gebruikersnaam en wachtwoord, Envoy serienummer in en schakel `Gebruik Enlighten` in. \n- Voor oudere modellen schakel `Gebruik Enlighten` niet in en voer gebruikersnaam `envoy` zonder wachtwoord of `installer` zonder wachtwoord of een geldige gebruikersnaam en wachtwoord in en controleer of voer het Host IP adres in."
             }
         }
+    },
+    "options": {
+      "step": {
+        "user": {
+          "title": "Envoy opties",
+          "data": {
+            "data_interval": "Tijd tussen entity updates [s].",
+            "data_fetch_timeout_seconds": "Timeout voor het lezen van Envoy gegevens [s], minimaal 5.",
+            "data_fetch_retry_count": "Aantal extra pogingen Envoy gegevens te lezen als timeout optreed, minimaal 1.",
+            "data_fetch_holdoff_seconds": "Wachttijd tussen 2 pogingen om Envoy gegevens te lezen [s], minimaal 0.",
+            "data_collection_timeout_seconds": "Maximale tijd voor het lezen van alle benodigde Envoy gegevens[s], minimaal 30.",
+            "do_not_use_production_json": "Maak geen gebruik van production json. (Alleen voor gebruik met Envoy-s metered met CT klemmen. Sneller, maar todays total en Last 7 day total zijn niet beschikbaar, current en lifetime gegevens zijn wel beschikbaar)"
+          },
+          "data_description": {
+            "data_interval": "Tijd tussen 2 gegevens verversingen, minimaal 5 sec. Bij wijziging van een instelling op deze pagina de Envoy opnieuw laden.",
+            "data_collection_timeout_seconds": "Als het langer duurt dan deze tijd om alle gegevens op te halen wordt de poging gestaakt. Hou rekening met herhalingen en ander instellingen."
+          }
+        }
+      }
     }
 }

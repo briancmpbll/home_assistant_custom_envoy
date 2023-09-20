@@ -11,7 +11,10 @@ Works with older models that only have (some) production metrics (ie. Envoy-C R 
 1. Install [HACS](https://hacs.xyz/) if you haven't already
 2. Add this repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories) in HACS
 4. Restart home assistant
-5. Add the integration through the home assistant configuration flow
+5. Add the integration through the home assistant configuration flow, [specify settings as needed](#initial-configuration-details)
+7. The integration has some run-time configuration options, [set these as desired](#runtime-configuration) after startup.
+8. The integration has some hidden entities, [enable these](#disabled-entities) to use these.
+
 
 # Usage
 
@@ -70,6 +73,13 @@ Optionally a wait time can be inserted between 2 retries. Only change this in sp
 ### Overall Timeout
 When getting data from the Envoy, an overall timer is started. If not all data is returned when the timer expires, the data collection is considered timed-out and all data is set to unavailable. Intent is catch all if data collection is never returning. Do not change this setting, unless Timeout for single envoy page or number of retries needs to be increased. In that case increase this overall timer value as well to prevent it to timeout the data collection. To get a feel for needed time, enable the debug mode on the envoy and inspect timing of a full collection cycle.
 
+### Do not use production json
+This switch, intended for use with the Envoy-s Metered only, will tell the integration not to use production endpoint on the Envoy. The production endpoint is a relatively slow endpoint on the Envoy and reportedly crashes or restarts at times resulting in timeouts.  
+
+The Envoy-s Metered (only) has other, faster endpoints that provide a subset of what production endpoint offers. This subset is lacking the daily total and last 7 day total values which are only provided by the production endpoint. If you are more interested in faster updates from the CT clamps and have less interest in the Daily total or last 7 day total then this may be an option to consider. The values for today total and last 7 day total will show as unavailable. The values for production and consumption CT clamps will update with every collection cycle. The values for the inverters will continue to update every 5 minutes as before.
+
+## Disabled entities
+The integration comes with some entities disabled by default. These only apply when using metered Envoy with CT clamps. If desired enable these by opening the HA entities window in the settings menu. Remove the filter for not shown entities by pushing the `clear` button. Then enter disabled or enphase in the search filter to find the disabled entities. Use the selector box to select the ones to enable and use the `enable selected` button to enable them.
 # Firmware and it's impact
 
 Enphase model offering differs in various countries as does firmware versions and releases. Not all firmware is released in all countries and as a result firmware versions may differ largely in time. Enphase does push new firmware to the IQ Gateway / Envoy, 'not necessarily letting the home owner know'. In the past this has broken this integration as API details and change information is limited available. See the [Enphase documentation website](https://enphase.com/installers/resources/documentation/communication) for information available.
@@ -89,14 +99,24 @@ This integration supports various models but as models have different features t
 
 ## IQ Gateway / ENVOY S standard metered
 
-What data is available depends on how many current transformer clamps (CT) are installed and what currents they measure. Both production and consumption clamps can be installed, each for up to 3 phases or multiple circuits on their own breaker in single phase setup.
+What data is available depends on how many current transformer clamps (CT) are installed and what currents they measure. Both production and consumption clamps can be installed, each for up to 3 phases or multiple circuits on their own breaker in single phase setup. The consumption clamps can be installed in 2 modes, 'Load with Solar'or 'Load only'. To measure net-consumption (energy import/export to the grid) it should be installedin Load with Solar mode. If in 'Load only' mode only total-consumption (to the house) can be reported.
 
 ### with connected current transformer clamps
 
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption over all phases.
 - Current power production and consumption, today's, last 7 days and lifetime energy production and consumption for each individual phase named L1, L2 and L3.
-- Current power production for each connected inverter.
-- Energy Import and Export Index over all phases and for each phase individually from meters readings
+- Current net power consumption and lifetime net energy production (export) and consumption (import) over all phases.
+- Current net power consumption and lifetime net energy production (export) and consumption (import) for each individual phase named L1, L2 and L3.
+- Next entities are disabled by default and need to be enabled in the entities configuration screen
+  - Power production for each connected inverter.
+  - Power factor over all phases.
+  - Power factor for each individual phase named L1, L2 and L3.
+  - Voltage over all phases. (Be aware this is the summed Voltage of all measured phases!)
+  - Voltage for each individual phase named L1, L2 and L3.
+  - Frequency over all phases.
+  - Frequency for each individual phase named L1, L2 and L3.
+  - Production and consumption Current (amps) over all phases.
+  - Production and consumption Current (amps) for each individual phase named L1, L2 and L3.
 
 **Note** If you have CT clamps on a single phase / breaker circuit only, the L1 production and consumption phase sensors will show same data as the over all phases sensors.
 
@@ -107,6 +127,8 @@ The current firmware (D7.6.175 and probably some other right before and after it
 - Current power production and lifetime energy production. Today's and last 7 day energy production reportedly are both solid 0.
 - Lifetime Energy production reportedly resets to zero roughly every 1.19 MWh.
 - Current power production for each connected inverter.
+
+**Note** - When adding (or removing) CT clamps after use witouth CT clamps this will cause (huge) step changes/spikes in life time values when CT readings are now from the CT clamps (or longer available) and the wrapping value is no longer/now used.  
 
 # Device and Entities
 
@@ -124,30 +146,48 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Today's Energy production|sensor.Envoy_\<sn\>_todays_energy_production|Wh|1|
 |Envoy \<sn\> Last Seven Days Energy Production|sensor.Envoy_\<sn\>_last_seven_days_energy_production|Wh|1|
 |Envoy \<sn\> Lifetime Energy Production|sensor.Envoy_\<sn\>_lifetime_energy_production|Wh|2|
+|Envoy \<sn\> Lifetime Net Energy Production|sensor.Envoy_\<sn\>_lifetime_net_energy_production|Wh|4|
 |Envoy \<sn\> Current Power Consumption|sensor.Envoy_\<sn\>_current_power_consumption|W||
+|Envoy \<sn\> Current Net Power Consumption|sensor.Envoy_\<sn\>_current_net_power_consumption|W|4|
 |Envoy \<sn\> Today's Energy Consumption|sensor.Envoy_\<sn\>_todays_energy_consumption|Wh|4,5|
-|Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4,5|
-|Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4,5|
+|Envoy \<sn\> Last Seven Days Energy Consumption|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption|Wh|4|
+|Envoy \<sn\> Lifetime Energy Consumption|sensor.Envoy_\<sn\>_lifetime_energy_consumption|Wh|4|
+|Envoy \<sn\> Lifetime Net Energy Consumption|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption|Wh|4,7,8|
+|Envoy \<sn\> Power Factor|sensor.Envoy_\<sn\>_pf||4,9|
+|Envoy \<sn\> Voltage|sensor.Envoy_\<sn\>_voltage|V|4,9|
+|Envoy \<sn\> Frequency|sensor.Envoy_\<sn\>_frequency|Wh|4,9|
+|Envoy \<sn\> Consumption Current|sensor.Envoy_\<sn\>_consumption_Current|A|4,9|
+|Envoy \<sn\> Production Current|sensor.Envoy_\<sn\>_production_Current|A|4,9|
+||||
 |Grid Status |binary_sensor.grid_status|On/Off|3|
-|Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_L\<n\>|W|4,5|
-|Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_L\<n\>|Wh|4,5|
-|Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production L\<n\>|Wh|4,5|
-|Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5|
-|Envoy \<sn\> Current Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_power_consumption_L\<n\>|W|4,5|
-|Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_L\<n\>|Wh|4,5,6|
+||||
+|Envoy \<sn\> Current Power Production L\<n\>|sensor.Envoy_\<sn\>_current_power_production_l\<n\>|W|4,5|
+|Envoy \<sn\> Today's Energy production L\<n\>|sensor.Envoy_\<sn\>_todays_energy_production_l\<n\>|Wh|4,5|
+|Envoy \<sn\> Last Seven Days Energy Production L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_production_l\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_l\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Net Energy Production L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_production_l\<n\>|Wh|4,5,7,8|
+|Envoy \<sn\> Current Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_power_consumption_l\<n\>|W|4,5|
+|Envoy \<sn\> Current Net Power Consumption L\<n\>|sensor.Envoy_\<sn\>_current_net_power_consumption_l\<n\>|W|4,5|
+|Envoy \<sn\> Today's Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_todays_energy_consumption_l\<n\>|Wh|4,5,6|
 |Envoy \<sn\> Last Seven Days Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_last_seven_days_energy_consumption L\<n\>|Wh|4,5,6|
-|Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_L\<n\>|Wh|4,5,6|
-|Index Import|sensor.Envoy_\<sn\>_index_import|Wh|4,5|
-|Index Export|sensor.Envoy_\<sn\>_index_export|Wh|4,5|
-|Index Import L\<n\>|sensor.Envoy_\<sn\>_index_import_L\<n\>|Wh|4,5|
-|Index Export L\<n\>|sensor.Envoy_\<sn\>_index_export_L\<n\>|Wh|4,5|
+|Envoy \<sn\> Lifetime Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_energy_consumption_l\<n\>|Wh|4,5,6|
+|Envoy \<sn\> Lifetime Net Energy Consumption L\<n\>|sensor.Envoy_\<sn\>_lifetime_net_energy_consumption_l\<n\>|Wh|4,5,6,7,8|
+|Envoy \<sn\> Power Factor L\<n\>|sensor.Envoy_\<sn\>_pf||4,5,9|
+|Envoy \<sn\> Voltage L\<n\>|sensor.Envoy_\<sn\>_voltage|V|4,5,9|
+|Envoy \<sn\> Frequency L\<n\>|sensor.Envoy_\<sn\>_frequency|Wh|4,5,9|
+|Envoy \<sn\> Consumption Current L\<n\>|sensor.Envoy_\<sn\>_consumption_Current|A|4,5,9|
+|Envoy \<sn\> Production Current L\<n\>|sensor.Envoy_\<sn\>_production_Current|A|4,5,9|
+|Envoy \<sn\> |sensor.Envoy_\<sn\>_|Wh|4,5|
 
 1 Always zero for Envoy Metered without meters.  
 2 Reportedly resets to zero when reaching ~1.92MWh for Envoy Metered without meters.  
 3 Not available on Legacy models and ENVOY Standard with recent firmware.  
 4 Only on Envoy metered with configured and connected meters.  
-5 L\<n\> L1,L2,L3, availability depends on which and how many meters are connected and configured.  
-6 Reportedly always zero on Envoy metered with Firmware D8.
+5 L\<n\> L1,L2,L3, availability depends on which and how many phases are connected and configured.  
+6 Reportedly always zero on Envoy metered with Firmware D8.  
+7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.  
+8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.  
+9 Disabled by default and must be enabled in the entities configuration screen. These are values from the consumption CT.
 
 ## Inverter Sensors
 
@@ -159,7 +199,7 @@ For each inverter a sensor for current power production is created.
 
 1: Not available on Legacy models
 
-**Note** the entity 'Last Updated' for each inverter is currently not provided. 
+**Note** the entity 'Last Updated' for each inverter is currently not provided.  
 
 **Note** As can be noted the Envoy serial number is part of the inverter sensor id and name. Internally the unique_id for it is the inverter serial number. When changing your setup by moving inverters to a new/different Envoy it will require some preparation/research how this will work out. (Statistics (history) is stored by sensor id)
 
@@ -207,3 +247,5 @@ When issues occur with this integration some items to check are:
   - Validate input, getdata returned RuntimeError: Could not get enlighten token, status: 403, <Response [403 Forbidden]>  : Make sure envoy serialnumber is correct and connected to your Enphase account
   - Validate input, getdata returned HTTPError: All connection attempts failed  : failure to connect to envoy.  : Validate if correct IP address of the Envoy is used
   - Fetched (1 of 2) in 0.0 sec from http://x.x.x.x/production.json?details=1: <Response [301 Moved Permanently]>: <html>  : Was 'use Enlighten' checked when using tokens or validate username/pw used for legacy devices.
+- Lifetime Net Energy Consumption / Production shows 0 or incorrect values. This is the case when the Consumption CT is not available or installed in Load only mode.  
+  

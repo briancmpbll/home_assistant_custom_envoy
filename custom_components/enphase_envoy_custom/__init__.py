@@ -54,6 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         fetch_retries=options.get("data_fetch_retry_count", FETCH_RETRIES),
         fetch_timeout_seconds=options.get("data_fetch_timeout_seconds", FETCH_TIMEOUT_SECONDS),
         fetch_holdoff_seconds=options.get("data_fetch_holdoff_seconds", FETCH_HOLDOFF_SECONDS),
+        do_not_use_production_json=options.get("do_not_use_production_json",False),
     )
     await envoy_reader._sync_store()
 
@@ -89,39 +90,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )()
 
             for description in PHASE_SENSORS:
-                if description.key.startswith("production_"):
-                    data[description.key] = await envoy_reader.production_phase(
-                        description.key
-                    )
-                elif description.key.startswith("consumption_"):
-                    data[description.key] = await envoy_reader.consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("daily_production_"):
-                    data[description.key] = await envoy_reader.daily_production_phase(
-                        description.key
-                    )
-                elif description.key.startswith("daily_consumption_"):
-                    data[description.key] = await envoy_reader.daily_consumption_phase(
-                        description.key
-                    )
-                elif description.key.startswith("lifetime_production_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.lifetime_production_phase(description.key)
-                elif description.key.startswith("lifetime_consumption_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.lifetime_consumption_phase(description.key)
-                elif description.key.startswith("import_index_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.import_index_phase(description.key)
-                elif description.key.startswith("export_index_"):
-                    data[
-                        description.key
-                    ] = await envoy_reader.export_index_phase(description.key)
-                    
+                if description.key[:-2] in [
+                    "none_known_at_this_time_"
+                ]:
+                    # call phase function for these
+                    data[description.key] = await getattr(envoy_reader, description.key[:-3]+"_phase")( description.key[-2:].lower())
+
+                else:
+                
+                    #catchall for non-specified phase sensors
+                    #get attributes for phase sensors based on key name
+                    #Removes _L1, _L2 or _L3 from key to call base non-phased function
+                    #Pass l1, l2 or l3 as parameter to _phase function
+                    data[description.key] = await getattr(envoy_reader, description.key[:-3])( description.key[-2:].lower())
+ 
+                        
             data["grid_status"] = await envoy_reader.grid_status()
             data["envoy_info"] = await envoy_reader.envoy_info()
 
