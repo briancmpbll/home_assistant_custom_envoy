@@ -263,6 +263,12 @@ class EnvoyOptionsFlowHandler(config_entries.OptionsFlow):
                     "data_collection_timeout_seconds", 55
                 ),
             ): vol.All(vol.Coerce(int), vol.Range(min=30)),
+            vol.Optional(
+                "do_not_use_production_json",
+                default=self.config_entry.options.get(
+                    "do_not_use_production_json", False
+                ),
+            ): bool,
         }
         return self.async_show_form(step_id="user", data_schema=vol.Schema(schema))
 
