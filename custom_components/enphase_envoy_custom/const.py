@@ -66,7 +66,7 @@ SENSORS = (
         key="lifetime_net_production",
         name="Lifetime Net Energy Production",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -204,7 +204,7 @@ PHASE_SENSORS = (
         key="lifetime_net_production_l1",
         name="Lifetime Net Energy Production L1",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -231,7 +231,7 @@ PHASE_SENSORS = (
         key="lifetime_net_production_l2",
         name="Lifetime Net Energy Production L2",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
@@ -258,7 +258,7 @@ PHASE_SENSORS = (
         key="lifetime_net_production_l3",
         name="Lifetime Net Energy Production L3",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
