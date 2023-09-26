@@ -40,6 +40,7 @@ ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
 ENDPOINT_URL_INFO_XML = "http{}://{}/info"
 ENDPOINT_URL_METERS = "http{}://{}/ivp/meters"
 ENDPOINT_URL_METERS_REPORTS = "http{}://{}/ivp/meters/reports"
+ENDPOINT_URL_METERS_READINGS = "http{}://{}/ivp/meters/readings"
 
 # pylint: disable=pointless-string-statement
 
@@ -179,6 +180,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.has_grid_status = True
         self.serial_number_last_six = None
         self.endpoint_meters_reports_json_results = None
+        self.endpoint_meters_readings_json_results = None
         self.endpoint_production_json_results = None
         self.endpoint_production_v1_results = None
         self.endpoint_production_inverters = None
@@ -268,6 +270,14 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 "endpoint_meters_reports_json_results", ENDPOINT_URL_METERS_REPORTS
             )
 
+    async def _update_from_meters_readings_endpoint(self):
+        """Update from ivp/meters/readings endpoint."""
+        if self.endpoint_type == ENVOY_MODEL_S:
+            #only touch meters reports if confirmed envoy model S, other type choke up on this request
+            await self._update_endpoint(
+                "endpoint_meters_readings_json_results", ENDPOINT_URL_METERS_READINGS
+            )
+
     async def _update_from_pc_endpoint(self,detectmode=False):
         """Update from PC endpoint."""
         if not self._do_not_use_production_json or detectmode:
@@ -352,6 +362,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                 self.info_refresh_buffer_seconds,
             )
         await self._update_from_meters_reports_endpoint()
+        await self._update_from_meters_readings_endpoint()
 
     async def _update_endpoint(self, attr, url):
         """Update a property from an endpoint."""
@@ -726,9 +737,46 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             + "support the requested metric."
         )
 
+    async def _meters_readings_value(self,field,report="net-consumption",phase=None):
+        """Extract value from meters readings json"""
+        report_map = {"production": 0, "net-consumption": 1, "total-consumption": 1}
 
-    async def _meters_report_value(self,field,report="net-consumption",phase=None):
-        """Extract value from meters reports json if net-consumption meter is available"""
+        phase_map = {"l1": 0, "l2": 1, "l3": 2}
+        #meters readings is only available for ENVOY Metered with CT configured
+        if (self.endpoint_type == ENVOY_MODEL_S) and (
+            #net-consumption requires consumption CT installed is Solar power included mode
+            (report == "net-consumption" 
+                and self.isConsumptionMeteringEnabled 
+                and self.net_consumption_meters_type)
+            # production data requires production CT installed
+            or (report == "production" and self.isProductionMeteringEnabled )
+            #if at least consumption CT is installed total-consumption will be available even in Load only mode install
+            or (report == "total-consumption" 
+                and self.isConsumptionMeteringEnabled
+                and not self.net_consumption_meters_type )
+        ):
+            if self.endpoint_meters_readings_json_results:
+                raw_json = self.endpoint_meters_readings_json_results.json()
+                if phase == None:
+                    try:
+                        jsondata = raw_json[report_map[report]][field]
+                        return jsondata
+                    except (KeyError, IndexError):
+                        return None
+                
+                #if production data requested and multiple phases are configured and requested phase is in count of configured phases return data or
+                #if consumption data requested and multiple phases are configured and requested phase is in count of configured phases return date
+                if ((self.production_meters_phase_count > 1 and phase_map[phase] < self.production_meters_phase_count and report=="production")
+                 or (self.consumption_meters_phase_count > 1 and phase_map[phase] < self.consumption_meters_phase_count and report!="production")):
+                    try:
+                        jsondata = raw_json[report_map[report]]["channels"][phase_map[phase]][field]
+                        return jsondata
+                    except (KeyError, IndexError):
+                        return None
+        return None
+
+    async def _meters_report_value(self,field,report="production",phase=None):
+        """Extract value from meters reports json if consumption meter is available"""
         report_map = {"production": 0, "net-consumption": 1, "total-consumption": 2}
         phase_map = {"l1": 0, "l2": 1, "l3": 2}
         #meters reports is only available for ENVOY Metered with CT configured
@@ -804,7 +852,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def net_consumption(self,phase=None):
         """Report cumulative or phase Power consumption (to/from grid) from consumption CT meters report"""
-        jsondata = await self._meters_report_value("currW",report="net-consumption",phase=phase)
+        jsondata = await self._meters_readings_value("instantaneousDemand",report="net-consumption",phase=phase)
         if jsondata is None:
             return self.message_consumption_not_available if phase is None else None
         return int(jsondata)
@@ -979,7 +1027,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
 
     async def lifetime_net_production(self,phase=None):
         """Report cumulative or phase lifetime net production (exported to grid) from consumption CT meters report"""
-        jsondata = await self._meters_report_value("whRcvdCum",report="net-consumption",phase=phase)
+        jsondata = await self._meters_readings_value("actEnergyRcvd",report="net-consumption",phase=phase)
         if jsondata is None:
             return self.message_consumption_not_available if phase is None else None
         return int(jsondata)
@@ -993,7 +1041,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         
     async def lifetime_net_consumption(self,phase=None):
         """Report cumulative or phase lifetime net-consumption from consumption CT meters report"""
-        jsondata = await self._meters_report_value("whDlvdCum",report="net-consumption",phase=phase)
+        jsondata = await self._meters_readings_value("actEnergyDlvd",report="net-consumption",phase=phase)
         if jsondata is None:
             return self.message_consumption_not_available if phase is None else None
         return int(jsondata)
@@ -1118,6 +1166,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             device_data["Endpoint-meters"] = self.endpoint_meters_json_results.text
         else:
             device_data["Endpoint-meters"] = self.endpoint_meters_json_results
+        if self.endpoint_meters_readings_json_results:
+            device_data["Endpoint-meters-readings"] = self.endpoint_meters_readings_json_results.text
+        else:
+            device_data["Endpoint-meters-readings"] = self.endpoint_meters_readings_json_results
         if self.endpoint_meters_reports_json_results:
             device_data["Endpoint-meters-reports"] = self.endpoint_meters_reports_json_results.text
         else:
@@ -1197,8 +1249,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.pf(),
                     self.voltage(),
                     self.frequency(),
-                    self.current_consumption(),
-                    self.current_production(),
+                    self.consumption_Current(),
+                    self.production_Current(),
                     #get values for phase L2
                     self.production_phase("l2"),
                     self.consumption("l2"),
@@ -1212,8 +1264,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.pf("l2"),
                     self.voltage("l2"),
                     self.frequency("l2"),
-                    self.current_consumption("l2"),
-                    self.current_production("l2"),
+                    self.consumption_Current("l2"),
+                    self.production_Current("l2"),
                     return_exceptions=False,
                 )
             )
@@ -1234,8 +1286,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             print(f"pf:                       {results[14]}")
             print(f"voltage:                  {results[15]}")
             print(f"frequency:                {results[16]}")
-            print(f"current_consumption:      {results[17]}")
-            print(f"current_production:       {results[18]}")
+            print(f"consumption_Current:      {results[17]}")
+            print(f"production_Current:       {results[18]}")
             print("--Phase L2 values--")
             print(f"production:               {results[19]}")
             print(f"consumption:              {results[20]}")
@@ -1249,8 +1301,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             print(f"pf:                       {results[28]}")
             print(f"voltage:                  {results[29]}")
             print(f"frequency:                {results[30]}")
-            print(f"current_consumption:      {results[31]}")
-            print(f"current_production:       {results[32]}")
+            print(f"consumption_Current:      {results[31]}")
+            print(f"production_Current:       {results[32]}")
             if "401" in str(data_results):
                 print(
                     "inverters_production:    Unable to retrieve inverter data - Authentication failure"
