@@ -1166,6 +1166,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             device_data["Endpoint-meters"] = self.endpoint_meters_json_results.text
         else:
             device_data["Endpoint-meters"] = self.endpoint_meters_json_results
+        if self.endpoint_meters_readings_json_results:
+            device_data["Endpoint-meters-readings"] = self.endpoint_meters_readings_json_results.text
+        else:
+            device_data["Endpoint-meters-readings"] = self.endpoint_meters_readings_json_results
         if self.endpoint_meters_reports_json_results:
             device_data["Endpoint-meters-reports"] = self.endpoint_meters_reports_json_results.text
         else:
@@ -1245,8 +1249,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.pf(),
                     self.voltage(),
                     self.frequency(),
-                    self.current_consumption(),
-                    self.current_production(),
+                    self.consumption_Current(),
+                    self.production_Current(),
                     #get values for phase L2
                     self.production_phase("l2"),
                     self.consumption("l2"),
@@ -1260,8 +1264,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.pf("l2"),
                     self.voltage("l2"),
                     self.frequency("l2"),
-                    self.current_consumption("l2"),
-                    self.current_production("l2"),
+                    self.consumption_Current("l2"),
+                    self.production_Current("l2"),
                     return_exceptions=False,
                 )
             )
@@ -1282,8 +1286,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             print(f"pf:                       {results[14]}")
             print(f"voltage:                  {results[15]}")
             print(f"frequency:                {results[16]}")
-            print(f"current_consumption:      {results[17]}")
-            print(f"current_production:       {results[18]}")
+            print(f"consumption_Current:      {results[17]}")
+            print(f"production_Current:       {results[18]}")
             print("--Phase L2 values--")
             print(f"production:               {results[19]}")
             print(f"consumption:              {results[20]}")
@@ -1297,8 +1301,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             print(f"pf:                       {results[28]}")
             print(f"voltage:                  {results[29]}")
             print(f"frequency:                {results[30]}")
-            print(f"current_consumption:      {results[31]}")
-            print(f"current_production:       {results[32]}")
+            print(f"consumption_Current:      {results[31]}")
+            print(f"production_Current:       {results[32]}")
             if "401" in str(data_results):
                 print(
                     "inverters_production:    Unable to retrieve inverter data - Authentication failure"
