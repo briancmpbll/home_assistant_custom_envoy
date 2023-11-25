@@ -171,7 +171,7 @@ SENSORS = (
     ),
     SensorEntityDescription(
         key="active_inverter_count",
-        name="Active Inverter Count"
+        name="Active Inverter Count",
         state_class=SensorStateClass.MEASUREMENT,
     ),
 
