@@ -177,6 +177,7 @@ SENSORS = (
         key="active_inverter_count",
         name="Active Inverter Count",
         state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default=False,
     ),
 
 )
