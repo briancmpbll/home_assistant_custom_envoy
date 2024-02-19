@@ -1,6 +1,6 @@
 {
   "domain": "enphase_envoy",
-  "name": "Enphase Envoy (DEV-Test)",
+  "name": "Enphase Envoy (DEV)",
   "documentation": "https://github.com/briancmpbll/home_assistant_custom_envoy#readme",
   "requirements": [
     "pyjwt",
