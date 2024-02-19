@@ -29,6 +29,7 @@ LIFE_PRODUCTION_REGEX = (
     r"<td>Since Installation</td>\s+<td>\s*(\d+|\d+\.\d+)\s*(Wh|kWh|MWh)</td>"
 )
 SERIAL_REGEX = re.compile(r"Envoy\s*Serial\s*Number:\s*([0-9]+)")
+ACTIVE_INVERTER_COUNT_REGEX = r"<td>Number of Microinverters Online</td>\s*<td>\s*(\d*)\s*</td>"
 
 ENDPOINT_URL_PRODUCTION_JSON = "http{}://{}/production.json?details=1"
 ENDPOINT_URL_PRODUCTION_V1 = "http{}://{}/api/v1/production"
@@ -37,6 +38,7 @@ ENDPOINT_URL_PRODUCTION = "http{}://{}/production"
 ENDPOINT_URL_CHECK_JWT = "https://{}/auth/check_jwt"
 ENDPOINT_URL_ENSEMBLE_INVENTORY = "http{}://{}/ivp/ensemble/inventory"
 ENDPOINT_URL_HOME_JSON = "http{}://{}/home.json"
+ENDPOINT_URL_HOME = "http{}://{}/home"
 ENDPOINT_URL_INFO_XML = "http{}://{}/info"
 ENDPOINT_URL_METERS = "http{}://{}/ivp/meters"
 ENDPOINT_URL_METERS_REPORTS = "http{}://{}/ivp/meters/reports"
@@ -145,6 +147,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         "Amps production data not available for your Envoy device."
     )
 
+    message_active_inverters_not_available = (
+        "Active Inverter count not available for your Envoy device."
+    )
+
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
@@ -187,6 +193,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.endpoint_production_results = None
         self.endpoint_ensemble_json_results = None
         self.endpoint_home_json_results = None
+        self.endpoint_home_results = None
         self.isProductionMeteringEnabled = False  # pylint: disable=invalid-name
         self.isConsumptionMeteringEnabled = False  # pylint: disable=invalid-name
         self.net_consumption_meters_type = False
@@ -302,6 +309,9 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         """Update from P0 endpoint."""
         await self._update_endpoint(
             "endpoint_production_results", ENDPOINT_URL_PRODUCTION
+        )
+        await self._update_endpoint(
+            "endpoint_home_results", ENDPOINT_URL_HOME
         )
 
     async def _update_info_endpoint(self):
@@ -1137,6 +1147,20 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
         self.has_grid_status = False
         return None
 
+    async def active_inverter_count(self) -> int|str:
+        """Return active inverter count from /home html for legacy envoy"""
+        if (self.endpoint_type == ENVOY_MODEL_LEGACY
+            and self.endpoint_home_results
+            and self.endpoint_home_results.status_code == 200):
+                
+            text = self.endpoint_home_results.text
+            match = re.search(ACTIVE_INVERTER_COUNT_REGEX, text, re.MULTILINE)
+            if match:
+                active_count = int(match.group(1))
+                return active_count
+
+        return self.message_active_inverters_not_available
+
     async def envoy_info(self):
         """Return information reported by Envoy info.xml."""
         device_data = {}
@@ -1214,6 +1238,10 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             device_data["Endpoint-info"] = self.endpoint_info_results.text
         else:
             device_data["Endpoint-info"] = self.endpoint_info_results
+        if self.endpoint_home_results:
+            device_data["legacy-home"] = self.endpoint_home_results.text
+        else:
+            device_data["legacy-home"] = self.endpoint_home_results
 
         return device_data
 
@@ -1232,7 +1260,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             loop = asyncio.get_event_loop()
             results = loop.run_until_complete(
                 asyncio.gather(
-                    self.production(),
+                    self.production(), #0
                     self.consumption(),
                     self.net_consumption(),
                     self.daily_production(),
@@ -1242,7 +1270,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.lifetime_production(),
                     self.lifetime_net_production(),
                     self.lifetime_consumption(),
-                    self.lifetime_net_consumption(),
+                    self.lifetime_net_consumption(), #10
                     self.battery_storage(),
                     self.inverters_production(),
                     self.envoy_info(),
@@ -1253,7 +1281,7 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.production_Current(),
                     #get values for phase L2
                     self.production_phase("l2"),
-                    self.consumption("l2"),
+                    self.consumption("l2"),  #20
                     self.net_consumption("l2"),
                     self.daily_production_phase("l2"),
                     self.daily_consumption_phase("l2"),
@@ -1263,9 +1291,11 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
                     self.lifetime_net_consumption("l2"),
                     self.pf("l2"),
                     self.voltage("l2"),
-                    self.frequency("l2"),
+                    self.frequency("l2"), #30
                     self.consumption_Current("l2"),
                     self.production_Current("l2"),
+                    self.grid_status(),
+                    self.active_inverter_count(), #34
                     return_exceptions=False,
                 )
             )
@@ -1303,6 +1333,8 @@ class EnvoyReader:  # pylint: disable=too-many-instance-attributes
             print(f"frequency:                {results[30]}")
             print(f"consumption_Current:      {results[31]}")
             print(f"production_Current:       {results[32]}")
+            print(f"grid_status:              {results[33]}")
+            print(f"active_inverters:         {results[34]}")
             if "401" in str(data_results):
                 print(
                     "inverters_production:    Unable to retrieve inverter data - Authentication failure"

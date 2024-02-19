@@ -91,7 +91,7 @@ This integration supports various models but as models have different features t
 
 ## ENVOY C / R / LCD
 
-- Current power production, today's, last 7 days and lifetime energy production.
+- Current power production, today's, last 7 days and lifetime energy production. And Active inverter count, which is disabled by default.
 
 ## IQ Gateway / ENVOY S standard (non metered)
 
@@ -159,6 +159,7 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 |Envoy \<sn\> Frequency|sensor.Envoy_\<sn\>_frequency|Wh|4,9|
 |Envoy \<sn\> Consumption Current|sensor.Envoy_\<sn\>_consumption_Current|A|4,9|
 |Envoy \<sn\> Production Current|sensor.Envoy_\<sn\>_production_Current|A|4,9|
+|Envoy \<sn\> Active Inverter Count|sensor.Envoy_\<sn\>_active_inverter_count||9,10|
 ||||
 |Grid Status |binary_sensor.grid_status|On/Off|3|
 ||||
@@ -188,7 +189,8 @@ A device `Envoy <serialnumber>` is created with sensor entities for accessible d
 6 Reportedly always zero on Envoy metered with Firmware D8.  
 7 In V0.0.18 renamed to Lifetime Net Energy Consumption /Production from Export Index/Import Import in v0.0.17. Old Entities will show as unavailable.  
 8 Only when consumption CT is installed in 'Load with Solar' mode. In 'Load only' mode values have no meaning.  
-9 Disabled by default and must be enabled in the entities configuration screen. These are values from the consumption CT.
+9 Disabled by default and must be enabled in the entities configuration screen. These are values from the consumption CT.  
+10 Only available on legacy Envoy.
 
 ## Inverter Sensors
 
